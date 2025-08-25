@@ -21,10 +21,13 @@
   </style>
 </head>
 <body>
-  <center><h1>Klâsik Türk Müziği Nota Arşivi</h1>
-  <!--<div class="sub">Basit, statik arşiv. Yeni eser eklemek için rows.json dosyasına kayıt ekleyin ve PDF dosyasını notalar/<code>id</code>.pdf olarak yükleyin.</div>-->
+  <h1>TSM Nota Arşivi</h1>
+  <div class="sub">
+    Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz. Dosyalar pdf, png, jpg, jpeg, gif, tif, tiff, webp olabilir.
+    İsterseniz rows.json içinde her eser için "dosya" veya "url" alanı tanımlayın (örn: "dosya": "1.png").
+  </div>
 
-  <input id="q" type="search" placeholder="Ara: eser, makam, usul, bestekâr, söz..." aria-label="Tabloda ara" /></center>
+  <input id="q" type="search" placeholder="Ara: eser, makam, usul, bestekâr, söz..." aria-label="Tabloda ara" />
 
   <table id="tbl" aria-describedby="help">
     <thead>
@@ -34,14 +37,16 @@
         <th>Usul</th>
         <th>Bestekâr</th>
         <th>Söz</th>
-        <th>PDF</th>
+        <th>Nota</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <div id="help" class="footer">
-    <span class="badge">İpucu</span> PDF dosyalarının yolu: <code>notalar/&lt;id&gt;.pdf</code>
+    <span class="badge">İpucu</span>
+    Otomatik tespit: notalar/&lt;id&gt;.[pdf|png|jpg|jpeg|gif|tif|tiff|webp].
+    Elle belirtmek için rows.json’a "dosya" (örn: "3.tiff") veya tam "url" ekleyin.
   </div>
 
   <script>
@@ -49,20 +54,79 @@
     const tbody = document.querySelector('#tbl tbody');
     const q = document.getElementById('q');
 
-    function render(rows) {
-      tbody.innerHTML = rows.map(r => `
-        <tr>
-          <td>${r.eser || ''}</td>
-          <td>${r.makam || ''}</td>
-          <td>${r.usul || ''}</td>
-          <td>${r.bestekar || ''}</td>
-          <td>${r.soz || ''}</td>
-          <td>${r.id ? `<a href="notalar/${r.id}.pdf" target="_blank" rel="noopener">Aç</a>` : '<span class="muted">—</span>'}</td>
-        </tr>`).join('');
+    const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
+    const assetCache = new Map(); // id -> url
+
+    function labelForUrl(url) {
+      const m = (url || '').toLowerCase().match(/\.([a-z0-9]+)(?:\?|#|$)/);
+      const ext = m ? m[1] : '';
+      if (ext === 'pdf') return 'PDF';
+      if (['png','jpg','jpeg','gif','tif','tiff','webp'].includes(ext)) return 'Görüntü';
+      return 'Aç';
     }
 
     function normalize(t) {
       return (t || '').toString().toLocaleLowerCase('tr');
+    }
+
+    function render(rows) {
+      tbody.innerHTML = rows.map(r => {
+        const nid = `asset-${String(r.id ?? '').replace(/[^a-zA-Z0-9_-]/g,'')}`;
+        const cached = r.id != null ? assetCache.get(r.id) : null;
+        const linkHtml = cached
+          ? `<a href="${cached}" target="_blank" rel="noopener">${labelForUrl(cached)}</a>`
+          : '<span class="muted">—</span>';
+        return `
+          <tr>
+            <td>${r.eser || ''}</td>
+            <td>${r.makam || ''}</td>
+            <td>${r.usul || ''}</td>
+            <td>${r.bestekar || ''}</td>
+            <td>${r.soz || ''}</td>
+            <td id="${nid}">${linkHtml}</td>
+          </tr>`;
+      }).join('');
+
+      // Bağlantısı olmayan satırlar için arka planda dosya tespiti yap
+      rows.forEach(r => {
+        if (r == null || r.id == null) return;
+        if (assetCache.has(r.id)) return;
+        resolveAsset(r).then(url => {
+          if (!url) return;
+          assetCache.set(r.id, url);
+          const nid = `asset-${String(r.id).replace(/[^a-zA-Z0-9_-]/g,'')}`;
+          const cell = document.getElementById(nid);
+          if (cell) cell.innerHTML = `<a href="${url}" target="_blank" rel="noopener">${labelForUrl(url)}</a>`;
+        });
+      });
+    }
+
+    async function resolveAsset(r) {
+      // 1) rows.json içinde "url" varsa doğrudan kullan
+      if (r.url && typeof r.url === 'string') return r.url;
+
+      // 2) "dosya" (veya "file") verilmişse köke göre birleştir
+      const fileField = r.dosya || r.file;
+      if (fileField && typeof fileField === 'string') {
+        // Tam URL mi yoksa notalar/ içinde bir dosya mı?
+        if (/^https?:\/\//i.test(fileField)) return fileField;
+        return `notalar/${fileField}`;
+      }
+
+      // 3) "ext" verilmişse notalar/<id>.<ext>
+      if (r.ext && typeof r.ext === 'string') {
+        return `notalar/${r.id}.${r.ext.replace(/^\./,'')}`;
+      }
+
+      // 4) Otomatik tespit: olası uzantıları HEAD ile sırayla dene
+      for (const ext of CANDIDATE_EXTS) {
+        const url = `notalar/${r.id}.${ext}`;
+        try {
+          const resp = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+          if (resp.ok) return url;
+        } catch (_) {}
+      }
+      return null;
     }
 
     function applyFilter() {
@@ -79,7 +143,10 @@
 
     fetch('rows.json', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : [])
-      .then(rows => { state.rows = Array.isArray(rows) ? rows : []; render(state.rows); })
+      .then(rows => {
+        state.rows = Array.isArray(rows) ? rows : [];
+        render(state.rows);
+      })
       .catch(() => { state.rows = []; render(state.rows); });
   </script>
 </body>
