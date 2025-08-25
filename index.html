@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TSM Nota Arşivi</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+    h1 { margin-bottom: .25rem; }
+    .sub { color: #666; font-size: 0.95rem; margin-bottom: 1rem; }
+    input[type="search"] { width: 100%; max-width: 520px; padding: .6rem .8rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; padding: .6rem .5rem; text-align: left; }
+    th { font-weight: 600; }
+    tr:hover { background: rgba(0,0,0,.03); }
+    .muted { color: #777; font-size: .9rem; }
+    .badge { display: inline-block; padding: .15rem .4rem; border-radius: 6px; border: 1px solid #d0d7de; font-size: .75rem; color: #444; background: #f6f8fa; }
+    .footer { margin-top: 2rem; font-size: .9rem; color: #666; }
+    a { color: #0a58ca; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h1>TSM Nota Arşivi</h1>
+  <div class="sub">Basit, statik arşiv. Yeni eser eklemek için rows.json dosyasına kayıt ekleyin ve PDF dosyasını notalar/<code>id</code>.pdf olarak yükleyin.</div>
+
+  <input id="q" type="search" placeholder="Ara: eser, makam, usul, bestekâr, söz..." aria-label="Tabloda ara" />
+
+  <table id="tbl" aria-describedby="help">
+    <thead>
+      <tr>
+        <th>Eser</th>
+        <th>Makam</th>
+        <th>Usul</th>
+        <th>Bestekâr</th>
+        <th>Söz</th>
+        <th>PDF</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="help" class="footer">
+    <span class="badge">İpucu</span> PDF dosyalarının yolu: <code>notalar/&lt;id&gt;.pdf</code>
+  </div>
+
+  <script>
+    const state = { rows: [], filtered: [] };
+    const tbody = document.querySelector('#tbl tbody');
+    const q = document.getElementById('q');
+
+    function render(rows) {
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.eser || ''}</td>
+          <td>${r.makam || ''}</td>
+          <td>${r.usul || ''}</td>
+          <td>${r.bestekar || ''}</td>
+          <td>${r.soz || ''}</td>
+          <td>${r.id ? `<a href="notalar/${r.id}.pdf" target="_blank" rel="noopener">Aç</a>` : '<span class="muted">—</span>'}</td>
+        </tr>`).join('');
+    }
+
+    function normalize(t) {
+      return (t || '').toString().toLocaleLowerCase('tr');
+    }
+
+    function applyFilter() {
+      const needle = normalize(q.value);
+      if (!needle) { render(state.rows); return; }
+      const rows = state.rows.filter(r => {
+        const hay = [r.eser, r.makam, r.usul, r.bestekar, r.soz].map(normalize).join(' ');
+        return hay.includes(needle);
+      });
+      render(rows);
+    }
+
+    q.addEventListener('input', applyFilter);
+
+    fetch('rows.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => { state.rows = Array.isArray(rows) ? rows : []; render(state.rows); })
+      .catch(() => { state.rows = []; render(state.rows); });
+  </script>
+</body>
+</html>
