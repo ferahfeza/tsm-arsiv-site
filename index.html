@@ -54,10 +54,11 @@
           </div>
         </div>
       </div>
- <p class="text-secondary mt-3 mb-3 text-center text-md-start">
-       <center> Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz.</center>
+
+      <p class="text-secondary mt-3 mb-3 text-center text-md-start">
+        Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz.
       </p>
-      
+
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
           <input id="q" type="search" class="form-control form-control-lg" placeholder="Ara: eser, makam, usul, bestekâr, söz..." aria-label="Tabloda ara" />
@@ -65,7 +66,7 @@
       </div>
     </header>
 
-    <!-- Koyu/dolgun jumbotron 
+    <!-- Koyu/dolgun jumbotron -->
     <section class="my-4">
       <div class="p-5 mb-4 text-bg-dark rounded-3">
         <div class="container-fluid py-5">
@@ -75,7 +76,7 @@
         </div>
       </div>
     </section>
--->
+
     <div class="table-responsive">
       <table id="tbl" class="table table-hover align-middle" aria-describedby="help">
         <thead class="table-light">
@@ -157,12 +158,9 @@
     const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
     const assetCache = new Map(); // id -> url
 
+    // Buton metni her zaman aynı
     function labelForUrl(url) {
-      const m = (url || '').toLowerCase().match(/\.([a-z0-9]+)(?:\?|#|$)/);
-      const ext = m ? m[1] : '';
-      if (ext === 'pdf') return 'PDF';
-      if (['png','jpg','jpeg','gif','tif','tiff','webp'].includes(ext)) return 'Görüntü';
-      return 'Aç';
+      return 'İndir ya da görüntüle';
     }
 
     function linkHtmlForUrl(url) {
