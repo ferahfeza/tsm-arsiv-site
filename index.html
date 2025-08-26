@@ -1,20 +1,64 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" data-bs-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TSM Nota Arşivi</title>
+
+  <!-- Sayfa yüklenmeden önce temayı ayarla (flicker'ı azaltır) -->
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('theme'); // 'light' | 'dark' | 'auto'
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initial = stored === 'auto' || !stored ? (prefersDark ? 'dark' : 'light') : stored;
+        document.documentElement.setAttribute('data-bs-theme', initial);
+      } catch (_) {
+        document.documentElement.setAttribute('data-bs-theme', 'light');
+      }
+    })();
+  </script>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
   <style>
-    :root { color-scheme: light dark; }
+    /* Sistem bileşenleri için renk düzeni ipucu */
+    :root, [data-bs-theme="light"] { color-scheme: light; }
+    [data-bs-theme="dark"] { color-scheme: dark; }
+
+    /* Masaüstünde başlığı ve tema seçiciyi aynı hatta hizala */
+    header .toolbar {
+      gap: .5rem;
+    }
   </style>
 </head>
 <body class="bg-body-tertiary">
   <main class="container py-4">
-    <header class="text-center mb-4">
-      <h1 class="display-6 mb-1">Klâsik Türk Müziği Nota Arşivi</h1>
-      <h2 class="h5 text-secondary mb-3">Ali İhsan Çanakoğlu</h2>
-      <p class="text-secondary mb-4">Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz.</p>
+    <header class="mb-4">
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="text-center text-md-start">
+          <h1 class="display-6 mb-1">Klâsik Türk Müziği Nota Arşivi</h1>
+          <h2 class="h5 text-secondary mb-0">Ali İhsan Çanakoğlu</h2>
+        </div>
+
+        <!-- Tema seçimli (Açık / Koyu / Sistem) -->
+        <div class="toolbar d-flex align-items-center justify-content-center">
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              Tema
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+              <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="light">🌞 Açık</button></li>
+              <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="dark">🌙 Koyu</button></li>
+              <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="auto">🖥️ Sistem</button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-secondary mt-3 mb-3 text-center text-md-start">
+        Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz.
+      </p>
+
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
           <input id="q" type="search" class="form-control form-control-lg" placeholder="Ara: eser, makam, usul, bestekâr, söz..." aria-label="Tabloda ara" />
@@ -47,6 +91,54 @@
     -->
   </main>
 
+  <!-- Bootstrap JS (Dropdown için gerekli) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+  <!-- Tema yönetimi -->
+  <script>
+    (() => {
+      const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+      const getStored = () => {
+        try { return localStorage.getItem('theme'); } catch { return null; }
+      };
+      const setStored = (v) => {
+        try { localStorage.setItem('theme', v); } catch {}
+      };
+      const applyTheme = (theme) => {
+        if (theme === 'auto') {
+          document.documentElement.setAttribute('data-bs-theme', mql && mql.matches ? 'dark' : 'light');
+        } else {
+          document.documentElement.setAttribute('data-bs-theme', theme);
+        }
+        // Dropdown aktif öğeyi işaretle
+        document.querySelectorAll('[data-bs-theme-value]').forEach(el => {
+          el.classList.toggle('active', el.getAttribute('data-bs-theme-value') === theme);
+        });
+      };
+
+      // Sistem tercihi değişirse ve 'auto' seçiliyse temayı güncelle
+      if (mql && mql.addEventListener) {
+        mql.addEventListener('change', () => {
+          if (getStored() === 'auto') applyTheme('auto');
+        });
+      }
+
+      // Dropdown click handler
+      window.addEventListener('DOMContentLoaded', () => {
+        const current = getStored() || 'auto';
+        applyTheme(current);
+        document.querySelectorAll('[data-bs-theme-value]').forEach(el => {
+          el.addEventListener('click', () => {
+            const theme = el.getAttribute('data-bs-theme-value');
+            setStored(theme);
+            applyTheme(theme);
+          });
+        });
+      });
+    })();
+  </script>
+
+  <!-- Uygulama mantığı -->
   <script>
     const state = { rows: [], filtered: [] };
     const tbody = document.querySelector('#tbl tbody');
@@ -75,9 +167,7 @@
       tbody.innerHTML = rows.map(r => {
         const nid = `asset-${String(r.id ?? '').replace(/[^a-zA-Z0-9_-]/g,'')}`;
         const cached = r.id != null ? assetCache.get(r.id) : null;
-        const linkHtml = cached
-          ? linkHtmlForUrl(cached)
-          : '<span class="text-secondary">—</span>';
+        const linkHtml = cached ? linkHtmlForUrl(cached) : '<span class="text-secondary">—</span>';
         return `
           <tr>
             <td>${r.eser || ''}</td>
@@ -89,9 +179,9 @@
           </tr>`;
       }).join('');
 
-      // Bağlantısı olmayan satırlar için arka planda dosya tespiti yap
+      // Bağlantısı olmayan satırlar için arka planda dosya tespiti
       rows.forEach(r => {
-        if (r == null || r.id == null) return;
+        if (!r || r.id == null) return;
         if (assetCache.has(r.id)) return;
         resolveAsset(r).then(url => {
           if (!url) return;
@@ -104,23 +194,18 @@
     }
 
     async function resolveAsset(r) {
-      // 1) rows.json içinde "url" varsa doğrudan kullan
       if (r.url && typeof r.url === 'string') return r.url;
 
-      // 2) "dosya" (veya "file") verilmişse köke göre birleştir
       const fileField = r.dosya || r.file;
       if (fileField && typeof fileField === 'string') {
-        // Tam URL mi yoksa notalar/ içinde bir dosya mı?
         if (/^https?:\/\//i.test(fileField)) return fileField;
         return `notalar/${fileField}`;
       }
 
-      // 3) "ext" verilmişse notalar/<id>.<ext>
       if (r.ext && typeof r.ext === 'string') {
         return `notalar/${r.id}.${r.ext.replace(/^\./,'')}`;
       }
 
-      // 4) Otomatik tespit: olası uzantıları HEAD ile sırayla dene
       for (const ext of CANDIDATE_EXTS) {
         const url = `notalar/${r.id}.${ext}`;
         try {
