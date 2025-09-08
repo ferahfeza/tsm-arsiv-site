@@ -182,13 +182,13 @@
           </select>
         </div>
       </div>
-      <!-- <div class="row mt-2">
+      <div class="row mt-2">
         <div class="col-12">
           <small class="text-muted">
             <i class="bi bi-info-circle"></i> Form bilgisi JSON verisinde yer almaktadır.
           </small>
         </div>
-      </div> -->
+      </div>
     </section>
 
     <div class="table-responsive">
@@ -216,6 +216,13 @@
         <tbody></tbody>
       </table>
     </div>
+
+    <!-- Sayfalama -->
+    <section class="mt-3">
+      <nav aria-label="Sayfalama">
+        <ul id="pagination" class="pagination justify-content-center mb-0"></ul>
+      </nav>
+    </section>
 
     <!--
     <p id="help" class="text-body-secondary small mt-3">
@@ -322,8 +329,11 @@
         composer: '',
         usul: '',
         form: ''
-      }
+      },
+      currentPage: 1,
+      pageSize: 10
     };
+
     const tbody = document.querySelector('#tbl tbody');
     const q = document.getElementById('q');
     const makamFilter = document.getElementById('makamFilter');
@@ -331,6 +341,7 @@
     const usulFilter = document.getElementById('usulFilter');
     const formFilter = document.getElementById('formFilter');
     const randomPieceBtn = document.getElementById('randomPiece');
+    const pagination = document.getElementById('pagination');
 
     const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
     const assetCache = new Map(); // id -> url
@@ -442,16 +453,111 @@
       });
     }
 
+    function getPageNumbers(current, totalPages, delta = 2) {
+      const range = [];
+      const pages = [];
+      let last;
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= current - delta && i <= current + delta)) {
+          range.push(i);
+        }
+      }
+      for (const i of range) {
+        if (last) {
+          if (i - last === 2) {
+            pages.push(last + 1);
+          } else if (i - last > 2) {
+            pages.push('…');
+          }
+        }
+        pages.push(i);
+        last = i;
+      }
+      return pages;
+    }
+
+    function renderPagination(totalPages) {
+      if (!pagination) return;
+
+      const current = state.currentPage;
+      const pages = getPageNumbers(current, totalPages);
+      const prevDisabled = current <= 1 ? ' disabled' : '';
+      const nextDisabled = current >= totalPages ? ' disabled' : '';
+
+      let html = '';
+      html += `
+        <li class="page-item${prevDisabled}">
+          <a class="page-link" href="#" aria-label="Önceki" data-page="prev">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>`;
+
+      pages.forEach(p => {
+        if (p === '…') {
+          html += `<li class="page-item disabled"><span class="page-link">…</span></li>`;
+        } else {
+          const active = p === current ? ' active' : '';
+          html += `
+            <li class="page-item${active}">
+              <a class="page-link" href="#" data-page="${p}">${p}</a>
+            </li>`;
+        }
+      });
+
+      html += `
+        <li class="page-item${nextDisabled}">
+          <a class="page-link" href="#" aria-label="Sonraki" data-page="next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>`;
+
+      pagination.innerHTML = html;
+    }
+
+    // Sayfalama tıklamaları
+    if (pagination) {
+      pagination.addEventListener('click', (e) => {
+        const a = e.target.closest('a[data-page]');
+        if (!a) return;
+        e.preventDefault();
+
+        const totalPages = Math.max(1, Math.ceil((state.filtered?.length || 0) / state.pageSize));
+        const p = a.getAttribute('data-page');
+        if (p === 'prev') {
+          if (state.currentPage > 1) state.currentPage--;
+        } else if (p === 'next') {
+          if (state.currentPage < totalPages) state.currentPage++;
+        } else {
+          const num = parseInt(p, 10);
+          if (!isNaN(num)) state.currentPage = Math.min(Math.max(num, 1), totalPages);
+        }
+        render(state.rows);
+        // Tabloya kaydır
+        document.getElementById('tbl')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
     function render(rows) {
       // Filtreleme uygula
       let filteredRows = filterRows(rows);
-      
+
       // Sıralama uygula
       if (state.sortColumn) {
         filteredRows = sortRows(filteredRows, state.sortColumn, state.sortDirection);
       }
-      
-      tbody.innerHTML = filteredRows.map(r => {
+
+      // Filtrelenmiş küme state'e yaz
+      state.filtered = filteredRows;
+
+      // Sayfalama
+      const totalPages = Math.max(1, Math.ceil(filteredRows.length / state.pageSize));
+      if (state.currentPage > totalPages) state.currentPage = 1;
+      const start = (state.currentPage - 1) * state.pageSize;
+      const pageRows = filteredRows.slice(start, start + state.pageSize);
+
+      // Satırları çiz
+      tbody.innerHTML = pageRows.map(r => {
         const nid = `asset-${String(r.id ?? '').replace(/[^a-zA-Z0-9_-]/g,'')}`;
         const cached = r.id != null ? assetCache.get(r.id) : null;
         const linkHtml = cached ? linkHtmlForUrl(cached) : '<span class="text-secondary">—</span>';
@@ -468,8 +574,11 @@
           </tr>`;
       }).join('');
 
+      // Sayfalama kontrollerini çiz
+      renderPagination(totalPages);
+
       // Bağlantısı olmayan satırlar için arka planda dosya tespiti
-      filteredRows.forEach(r => {
+      pageRows.forEach(r => {
         if (!r || r.id == null) return;
         if (assetCache.has(r.id)) return;
         resolveAsset(r).then(url => {
@@ -506,23 +615,21 @@
     }
 
     function applyFilters() {
+      state.currentPage = 1; // her filtrelemede başa dön
       render(state.rows);
     }
 
-    // Rastgele eser göster
-    function showRandomPiece() {
-      if (state.rows.length === 0) return;
-      
-      const randomIndex = Math.floor(Math.random() * state.rows.length);
-      const randomPiece = state.rows[randomIndex];
-      
-      // Arama kutusunu temizle ve rastgele eseri ara
-      q.value = randomPiece.eser;
-      applyFilters();
-      
-      // Arama kutusuna odaklan
-      q.focus();
-      q.select();
+    // Rastgele eser (jumbotron kaldırıldığı için buton yoksa atlama yap)
+    if (randomPieceBtn) {
+      randomPieceBtn.addEventListener('click', () => {
+        if (state.rows.length === 0) return;
+        const randomIndex = Math.floor(Math.random() * state.rows.length);
+        const randomPiece = state.rows[randomIndex];
+        q.value = randomPiece.eser;
+        applyFilters();
+        q.focus();
+        q.select();
+      });
     }
 
     // Event listeners
@@ -547,10 +654,6 @@
       state.activeFilters.form = e.target.value;
       applyFilters();
     });
-    
-    if (randomPieceBtn) {
-      randomPieceBtn.addEventListener('click', showRandomPiece);
-    }
 
     // Tablo başlığı sıralama
     document.querySelectorAll('.sortable').forEach(th => {
@@ -563,14 +666,12 @@
           state.sortColumn = column;
           state.sortDirection = 'asc';
         }
-        
-        // Sıralama ikonlarını güncelle
+
+        state.currentPage = 1; // sıralamada başa dön
         document.querySelectorAll('.sortable').forEach(header => {
           header.classList.remove('sort-asc', 'sort-desc');
         });
-        
         th.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
-        
         applyFilters();
       });
     });
