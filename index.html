@@ -109,17 +109,7 @@
       </div>
     </header>
 
-    <!-- Koyu/dolgun jumbotron -->
-    <section class="my-4">
-      <div class="p-5 mb-4 text-bg-dark rounded-3">
-        <div class="container-fluid py-5">
-          <h1 class="display-6 mb-2">Hoş Geldiniz</h3>
-          <p class="fs-5 mb-4">Klâsik Türk Müziği eserlerini makam, usûl, bestekâr veya söz yazarına göre arayın.</p>
-          <a class="btn btn-light btn-lg" href="#q">Aramaya Git</a>
-          <button id="randomPiece" class="btn btn-outline-light btn-lg ms-2">Rastgele Eser</button>
-        </div>
-      </div>
-    </section> 
+ 
 
     <!-- İstatistikler -->
     <section id="statistics" class="mb-4">
@@ -343,7 +333,7 @@
     const composerFilter = document.getElementById('composerFilter');
     const usulFilter = document.getElementById('usulFilter');
     const formFilter = document.getElementById('formFilter');
-    const randomPieceBtn = document.getElementById('randomPiece');
+
 
     const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
     const assetCache = new Map(); // id -> url
@@ -522,21 +512,7 @@
       render(state.rows);
     }
 
-    // Rastgele eser göster
-    function showRandomPiece() {
-      if (state.rows.length === 0) return;
-      
-      const randomIndex = Math.floor(Math.random() * state.rows.length);
-      const randomPiece = state.rows[randomIndex];
-      
-      // Arama kutusunu temizle ve rastgele eseri ara
-      q.value = randomPiece.eser;
-      applyFilters();
-      
-      // Arama kutusuna odaklan
-      q.focus();
-      q.select();
-    }
+
 
     // Event listeners
     q.addEventListener('input', applyFilters);
@@ -560,8 +536,7 @@
       state.activeFilters.form = e.target.value;
       applyFilters();
     });
-    
-    randomPieceBtn.addEventListener('click', showRandomPiece);
+
 
     // Tablo başlığı sıralama
     document.querySelectorAll('.sortable').forEach(th => {
