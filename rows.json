@@ -1,5 +1,5 @@
 [
-  { "id": 1, "eser": "Ferahfeza Peşrev", "makam": "Ferahfeza",  "usul": "Fahte", "bestekar": "İsmail Hakkı Bey",  "dosya": "Peşrev - İsmail Hakkı Bey (Muallim) - Ferahfeza - v5.pdf" },
-  { "id": 2, "eser": "Bu gece ben yine bülbülleri hâmuş ettim", "makam": "Ferahfeza", "usul": "Yürük Semâi", "bestekar": "Dede Efendi",   "dosya": "bu-gece-ben-yine.jpg" },
-  { "id": 3, "eser": "Bilmem ki safâ neş'e bu ömrün neresinde", "makam": "Karcığar", "usul": "Türk Aksağı", "bestekar": "Leon Hancıyan",  "dosya": "bilmemki_safa.pdf" }
+  { "id": 1, "eser": "Ferahfeza Peşrev", "form": "Peşrev", "makam": "Ferahfeza",  "usul": "Fahte", "bestekar": "İsmail Hakkı Bey",  "dosya": "Peşrev - İsmail Hakkı Bey (Muallim) - Ferahfeza - v5.pdf" },
+  { "id": 2, "eser": "Bu gece ben yine bülbülleri hâmuş ettim", "form": "Şarkı", "makam": "Ferahfeza", "usul": "Yürük Semâi", "bestekar": "Dede Efendi",   "dosya": "bu-gece-ben-yine.jpg" },
+  { "id": 3, "eser": "Bilmem ki safâ neş'e bu ömrün neresinde", "form": "Şarkı", "makam": "Karcığar", "usul": "Türk Aksağı", "bestekar": "Leon Hancıyan",  "dosya": "bilmemki_safa.pdf" }
 ]
