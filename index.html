@@ -30,6 +30,48 @@
     header .toolbar {
       gap: .5rem;
     }
+
+    /* Sıralanabilir tablo başlıkları */
+    .sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .sortable:hover {
+      background-color: var(--bs-secondary-bg);
+    }
+
+    .sort-icon {
+      font-size: 0.8em;
+      color: #6c757d;
+      margin-left: 0.25rem;
+    }
+
+    .sortable.sort-asc .sort-icon::before {
+      content: "↑";
+    }
+
+    .sortable.sort-desc .sort-icon::before {
+      content: "↓";
+    }
+
+    /* İstatistik kartları */
+    #statistics .card {
+      transition: transform 0.2s;
+    }
+
+    #statistics .card:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Responsive tablo */
+    @media (max-width: 768px) {
+      .table th, .table td {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.25rem;
+      }
+    }
   </style>
 </head>
 <body class="bg-body-tertiary">
@@ -74,6 +116,69 @@
           <h1 class="display-6 mb-2">Hoş Geldiniz</h3>
           <p class="fs-5 mb-4">Klâsik Türk Müziği eserlerini makam, usûl, bestekâr veya söz yazarına göre arayın.</p>
           <a class="btn btn-light btn-lg" href="#q">Aramaya Git</a>
+          <button id="randomPiece" class="btn btn-outline-light btn-lg ms-2">Rastgele Eser</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- İstatistikler -->
+    <section id="statistics" class="mb-4">
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title text-primary mb-1"><span id="totalPieces">0</span></h5>
+              <p class="card-text small text-muted mb-0">Toplam Eser</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title text-success mb-1"><span id="totalMakams">0</span></h5>
+              <p class="card-text small text-muted mb-0">Makam</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title text-warning mb-1"><span id="totalComposers">0</span></h5>
+              <p class="card-text small text-muted mb-0">Bestekâr</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title text-info mb-1"><span id="totalUsuls">0</span></h5>
+              <p class="card-text small text-muted mb-0">Usûl</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gelişmiş Filtreleme -->
+    <section class="mb-4">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="makamFilter" class="form-label">Makam Filtresi</label>
+          <select id="makamFilter" class="form-select">
+            <option value="">Tümü</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="composerFilter" class="form-label">Bestekâr Filtresi</label>
+          <select id="composerFilter" class="form-select">
+            <option value="">Tümü</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="usulFilter" class="form-label">Usûl Filtresi</label>
+          <select id="usulFilter" class="form-select">
+            <option value="">Tümü</option>
+          </select>
         </div>
       </div>
     </section>
@@ -82,10 +187,21 @@
       <table id="tbl" class="table table-hover align-middle" aria-describedby="help">
         <thead class="table-light">
           <tr>
-            <th scope="col">Eser İsmi</th>
-            <th scope="col">Makam</th>
-            <th scope="col">Usûl</th>
-            <th scope="col">Bestekâr</th>
+            <th scope="col" class="sortable" data-sort="eser">
+              Eser İsmi <i class="sort-icon">⇅</i>
+            </th>
+            <th scope="col" class="sortable" data-sort="form">
+              Form <i class="sort-icon">⇅</i>
+            </th>
+            <th scope="col" class="sortable" data-sort="makam">
+              Makam <i class="sort-icon">⇅</i>
+            </th>
+            <th scope="col" class="sortable" data-sort="usul">
+              Usûl <i class="sort-icon">⇅</i>
+            </th>
+            <th scope="col" class="sortable" data-sort="bestekar">
+              Bestekâr <i class="sort-icon">⇅</i>
+            </th>
             <th scope="col">Nota</th>
           </tr>
         </thead>
@@ -101,6 +217,43 @@
     </p>
     -->
   </main>
+
+  <!-- Footer -->
+  <footer class="bg-light border-top mt-5">
+    <div class="container py-4">
+      <div class="row">
+        <div class="col-md-6">
+          <h6 class="fw-bold">Türk Klasik Müziği Nota Arşivi</h6>
+          <p class="text-muted small">
+            Bu arşiv, Türk Klasik Müziği eserlerinin notalarını araştırmacılar ve müzik severlerin 
+            erişimine sunmak amacıyla hazırlanmıştır.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold">Önemli Terimler</h6>
+          <div class="small text-muted">
+            <p class="mb-1"><strong>Makam:</strong> Türk müziğinde ses dizisi sistemi</p>
+            <p class="mb-1"><strong>Usûl:</strong> Türk müziğinde ritim kalıbı</p>
+            <p class="mb-1"><strong>Peşrev:</strong> Sözlü eserlere giriş niteliğinde instrumental form</p>
+            <p class="mb-0"><strong>Beste:</strong> Klasik Türk müziğinin en önemli büyük formu</p>
+          </div>
+        </div>
+      </div>
+      <hr class="my-3">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <p class="text-muted small mb-0">
+            © 2024 TSM Nota Arşivi - Hazırlayan: Ali İhsan Çanakoğlu
+          </p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p class="text-muted small mb-0">
+            Toplam <span id="footerStats">0</span> eser arşivlenmiştir.
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <!-- Bootstrap JS (Dropdown için gerekli) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -151,12 +304,40 @@
 
   <!-- Uygulama mantığı -->
   <script>
-    const state = { rows: [], filtered: [] };
+    const state = { 
+      rows: [], 
+      filtered: [], 
+      sortColumn: null, 
+      sortDirection: 'asc',
+      activeFilters: {
+        makam: '',
+        composer: '',
+        usul: ''
+      }
+    };
     const tbody = document.querySelector('#tbl tbody');
     const q = document.getElementById('q');
+    const makamFilter = document.getElementById('makamFilter');
+    const composerFilter = document.getElementById('composerFilter');
+    const usulFilter = document.getElementById('usulFilter');
+    const randomPieceBtn = document.getElementById('randomPiece');
 
     const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
     const assetCache = new Map(); // id -> url
+
+    // Müzik formu belirleme
+    function detectMusicForm(eserName) {
+      const normalized = (eserName || '').toLowerCase();
+      if (normalized.includes('peşrev')) return 'Peşrev';
+      if (normalized.includes('beste')) return 'Beste';
+      if (normalized.includes('şarkı')) return 'Şarkı';
+      if (normalized.includes('semâi')) return 'Semâi';
+      if (normalized.includes('türkü')) return 'Türkü';
+      if (normalized.includes('ilahi')) return 'İlahi';
+      if (normalized.includes('durak')) return 'Durak';
+      if (normalized.includes('varsağı')) return 'Varsağı';
+      return 'Diğer';
+    }
 
     // Buton metni her zaman aynı
     function labelForUrl(url) {
@@ -171,24 +352,115 @@
       return (t || '').toString().toLocaleLowerCase('tr');
     }
 
+    // İstatistikleri güncelle
+    function updateStatistics(rows) {
+      const uniqueMakams = new Set(rows.map(r => r.makam).filter(Boolean));
+      const uniqueComposers = new Set(rows.map(r => r.bestekar).filter(Boolean));
+      const uniqueUsuls = new Set(rows.map(r => r.usul).filter(Boolean));
+
+      document.getElementById('totalPieces').textContent = rows.length;
+      document.getElementById('totalMakams').textContent = uniqueMakams.size;
+      document.getElementById('totalComposers').textContent = uniqueComposers.size;
+      document.getElementById('totalUsuls').textContent = uniqueUsuls.size;
+      document.getElementById('footerStats').textContent = rows.length;
+    }
+
+    // Filtreleri doldur
+    function populateFilters(rows) {
+      const makams = [...new Set(rows.map(r => r.makam).filter(Boolean))].sort();
+      const composers = [...new Set(rows.map(r => r.bestekar).filter(Boolean))].sort();
+      const usuls = [...new Set(rows.map(r => r.usul).filter(Boolean))].sort();
+
+      makamFilter.innerHTML = '<option value="">Tümü</option>' + 
+        makams.map(m => `<option value="${m}">${m}</option>`).join('');
+      
+      composerFilter.innerHTML = '<option value="">Tümü</option>' + 
+        composers.map(c => `<option value="${c}">${c}</option>`).join('');
+      
+      usulFilter.innerHTML = '<option value="">Tümü</option>' + 
+        usuls.map(u => `<option value="${u}">${u}</option>`).join('');
+    }
+
+    // Sıralama
+    function sortRows(rows, column, direction) {
+      return [...rows].sort((a, b) => {
+        let valueA = a[column] || '';
+        let valueB = b[column] || '';
+        
+        if (column === 'form') {
+          valueA = detectMusicForm(a.eser);
+          valueB = detectMusicForm(b.eser);
+        }
+        
+        valueA = valueA.toString().toLowerCase();
+        valueB = valueB.toString().toLowerCase();
+        
+        if (direction === 'asc') {
+          return valueA.localeCompare(valueB, 'tr');
+        } else {
+          return valueB.localeCompare(valueA, 'tr');
+        }
+      });
+    }
+
+    // Filtreleme
+    function filterRows(rows) {
+      const searchNeedle = normalize(q.value);
+      
+      return rows.filter(r => {
+        // Arama filtresi
+        if (searchNeedle) {
+          const hay = [r.eser, r.makam, r.usul, r.bestekar, r.soz].map(normalize).join(' ');
+          if (!hay.includes(searchNeedle)) return false;
+        }
+        
+        // Makam filtresi
+        if (state.activeFilters.makam && r.makam !== state.activeFilters.makam) {
+          return false;
+        }
+        
+        // Bestekâr filtresi
+        if (state.activeFilters.composer && r.bestekar !== state.activeFilters.composer) {
+          return false;
+        }
+        
+        // Usûl filtresi
+        if (state.activeFilters.usul && r.usul !== state.activeFilters.usul) {
+          return false;
+        }
+        
+        return true;
+      });
+    }
+
     function render(rows) {
-      tbody.innerHTML = rows.map(r => {
+      // Filtreleme uygula
+      let filteredRows = filterRows(rows);
+      
+      // Sıralama uygula
+      if (state.sortColumn) {
+        filteredRows = sortRows(filteredRows, state.sortColumn, state.sortDirection);
+      }
+      
+      tbody.innerHTML = filteredRows.map(r => {
         const nid = `asset-${String(r.id ?? '').replace(/[^a-zA-Z0-9_-]/g,'')}`;
         const cached = r.id != null ? assetCache.get(r.id) : null;
         const linkHtml = cached ? linkHtmlForUrl(cached) : '<span class="text-secondary">—</span>';
+        const form = detectMusicForm(r.eser);
+        
         return `
           <tr>
             <td>${r.eser || ''}</td>
+            <td><span class="badge bg-secondary">${form}</span></td>
             <td>${r.makam || ''}</td>
             <td>${r.usul || ''}</td>
             <td>${r.bestekar || ''}</td>
-            <!--<td>${r.soz || ''}</td>-->
             <td id="${nid}">${linkHtml}</td>
           </tr>`;
       }).join('');
 
       // Bağlantısı olmayan satırlar için arka planda dosya tespiti
-      rows.forEach(r => {
+      filteredRows.forEach(r => {
         if (!r || r.id == null) return;
         if (assetCache.has(r.id)) return;
         resolveAsset(r).then(url => {
@@ -224,25 +496,84 @@
       return null;
     }
 
-    function applyFilter() {
-      const needle = normalize(q.value);
-      if (!needle) { render(state.rows); return; }
-      const rows = state.rows.filter(r => {
-        const hay = [r.eser, r.makam, r.usul, r.bestekar, r.soz].map(normalize).join(' ');
-        return hay.includes(needle);
-      });
-      render(rows);
+    function applyFilters() {
+      render(state.rows);
     }
 
-    q.addEventListener('input', applyFilter);
+    // Rastgele eser göster
+    function showRandomPiece() {
+      if (state.rows.length === 0) return;
+      
+      const randomIndex = Math.floor(Math.random() * state.rows.length);
+      const randomPiece = state.rows[randomIndex];
+      
+      // Arama kutusunu temizle ve rastgele eseri ara
+      q.value = randomPiece.eser;
+      applyFilters();
+      
+      // Arama kutusuna odaklan
+      q.focus();
+      q.select();
+    }
 
+    // Event listeners
+    q.addEventListener('input', applyFilters);
+    
+    makamFilter.addEventListener('change', (e) => {
+      state.activeFilters.makam = e.target.value;
+      applyFilters();
+    });
+    
+    composerFilter.addEventListener('change', (e) => {
+      state.activeFilters.composer = e.target.value;
+      applyFilters();
+    });
+    
+    usulFilter.addEventListener('change', (e) => {
+      state.activeFilters.usul = e.target.value;
+      applyFilters();
+    });
+    
+    randomPieceBtn.addEventListener('click', showRandomPiece);
+
+    // Tablo başlığı sıralama
+    document.querySelectorAll('.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const column = th.getAttribute('data-sort');
+        
+        if (state.sortColumn === column) {
+          state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.sortColumn = column;
+          state.sortDirection = 'asc';
+        }
+        
+        // Sıralama ikonlarını güncelle
+        document.querySelectorAll('.sortable').forEach(header => {
+          header.classList.remove('sort-asc', 'sort-desc');
+        });
+        
+        th.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+        
+        applyFilters();
+      });
+    });
+
+    // Veri yükleme
     fetch('rows.json', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : [])
       .then(rows => {
         state.rows = Array.isArray(rows) ? rows : [];
+        updateStatistics(state.rows);
+        populateFilters(state.rows);
         render(state.rows);
       })
-      .catch(() => { state.rows = []; render(state.rows); });
+      .catch(() => { 
+        state.rows = []; 
+        updateStatistics(state.rows);
+        populateFilters(state.rows);
+        render(state.rows); 
+      });
   </script>
 </body>
 </html>
