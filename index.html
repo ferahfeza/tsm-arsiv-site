@@ -198,7 +198,7 @@
       <div class="row mt-2">
         <div class="col-12">
           <small class="text-muted">
-            <i class="bi bi-info-circle"></i> Form bilgisi eser isminden otomatik olarak tespit edilmektedir.
+            <i class="bi bi-info-circle"></i> Form bilgisi JSON verisinde yer almaktadır.
           </small>
         </div>
       </div>
@@ -348,22 +348,7 @@
     const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
     const assetCache = new Map(); // id -> url
 
-    // Müzik formu belirleme
-    // NOT: JSON verisinde ayrı bir 'form' alanı bulunmamaktadır.
-    // Form bilgisi, eser isminden otomatik olarak tespit edilmektedir.
-    // Eser isminde geçen anahtar kelimelere göre form sınıflandırması yapılır.
-    function detectMusicForm(eserName) {
-      const normalized = (eserName || '').toLowerCase();
-      if (normalized.includes('peşrev')) return 'Peşrev';
-      if (normalized.includes('beste')) return 'Beste';
-      if (normalized.includes('şarkı')) return 'Şarkı';
-      if (normalized.includes('semâi')) return 'Semâi';
-      if (normalized.includes('türkü')) return 'Türkü';
-      if (normalized.includes('ilahi')) return 'İlahi';
-      if (normalized.includes('durak')) return 'Durak';
-      if (normalized.includes('varsağı')) return 'Varsağı';
-      return 'Diğer'; // Belirtilen form türlerinden hiçbiri tespit edilemezse
-    }
+    // Müzik formu bilgisi JSON verisinde 'form' alanından okunmaktadır.
 
     // Buton metni her zaman aynı
     function labelForUrl(url) {
@@ -383,7 +368,7 @@
       const uniqueMakams = new Set(rows.map(r => r.makam).filter(Boolean));
       const uniqueComposers = new Set(rows.map(r => r.bestekar).filter(Boolean));
       const uniqueUsuls = new Set(rows.map(r => r.usul).filter(Boolean));
-      const uniqueForms = new Set(rows.map(r => detectMusicForm(r.eser)).filter(Boolean));
+      const uniqueForms = new Set(rows.map(r => r.form).filter(Boolean));
 
       document.getElementById('totalPieces').textContent = rows.length;
       document.getElementById('totalForms').textContent = uniqueForms.size;
@@ -398,7 +383,7 @@
       const makams = [...new Set(rows.map(r => r.makam).filter(Boolean))].sort();
       const composers = [...new Set(rows.map(r => r.bestekar).filter(Boolean))].sort();
       const usuls = [...new Set(rows.map(r => r.usul).filter(Boolean))].sort();
-      const forms = [...new Set(rows.map(r => detectMusicForm(r.eser)).filter(Boolean))].sort();
+      const forms = [...new Set(rows.map(r => r.form).filter(Boolean))].sort();
 
       makamFilter.innerHTML = '<option value="">Tümü</option>' + 
         makams.map(m => `<option value="${m}">${m}</option>`).join('');
@@ -420,8 +405,8 @@
         let valueB = b[column] || '';
         
         if (column === 'form') {
-          valueA = detectMusicForm(a.eser);
-          valueB = detectMusicForm(b.eser);
+          valueA = a.form || '';
+          valueB = b.form || '';
         }
         
         valueA = valueA.toString().toLowerCase();
@@ -461,8 +446,8 @@
           return false;
         }
         
-        // Form filtresi (eser isminden tespit edilen form)
-        if (state.activeFilters.form && detectMusicForm(r.eser) !== state.activeFilters.form) {
+        // Form filtresi (JSON'dan gelen form bilgisi)
+        if (state.activeFilters.form && r.form !== state.activeFilters.form) {
           return false;
         }
         
@@ -483,7 +468,7 @@
         const nid = `asset-${String(r.id ?? '').replace(/[^a-zA-Z0-9_-]/g,'')}`;
         const cached = r.id != null ? assetCache.get(r.id) : null;
         const linkHtml = cached ? linkHtmlForUrl(cached) : '<span class="text-secondary">—</span>';
-        const form = detectMusicForm(r.eser);
+        const form = r.form || '';
         
         return `
           <tr>
