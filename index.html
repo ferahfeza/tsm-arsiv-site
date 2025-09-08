@@ -124,7 +124,7 @@
     <!-- İstatistikler -->
     <section id="statistics" class="mb-4">
       <div class="row g-3">
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-2 col-lg-2">
           <div class="card text-center">
             <div class="card-body">
               <h5 class="card-title text-primary mb-1"><span id="totalPieces">0</span></h5>
@@ -132,7 +132,15 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-2 col-lg-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title text-danger mb-1"><span id="totalForms">0</span></h5>
+              <p class="card-text small text-muted mb-0">Form</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg-3">
           <div class="card text-center">
             <div class="card-body">
               <h5 class="card-title text-success mb-1"><span id="totalMakams">0</span></h5>
@@ -140,7 +148,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-3 col-lg-3">
           <div class="card text-center">
             <div class="card-body">
               <h5 class="card-title text-warning mb-1"><span id="totalComposers">0</span></h5>
@@ -148,7 +156,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-2 col-lg-2">
           <div class="card text-center">
             <div class="card-body">
               <h5 class="card-title text-info mb-1"><span id="totalUsuls">0</span></h5>
@@ -162,23 +170,36 @@
     <!-- Gelişmiş Filtreleme -->
     <section class="mb-4">
       <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label for="makamFilter" class="form-label">Makam Filtresi</label>
           <select id="makamFilter" class="form-select">
             <option value="">Tümü</option>
           </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label for="composerFilter" class="form-label">Bestekâr Filtresi</label>
           <select id="composerFilter" class="form-select">
             <option value="">Tümü</option>
           </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label for="usulFilter" class="form-label">Usûl Filtresi</label>
           <select id="usulFilter" class="form-select">
             <option value="">Tümü</option>
           </select>
+        </div>
+        <div class="col-md-3">
+          <label for="formFilter" class="form-label">Form Filtresi</label>
+          <select id="formFilter" class="form-select">
+            <option value="">Tümü</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <small class="text-muted">
+            <i class="bi bi-info-circle"></i> Form bilgisi eser isminden otomatik olarak tespit edilmektedir.
+          </small>
         </div>
       </div>
     </section>
@@ -312,7 +333,8 @@
       activeFilters: {
         makam: '',
         composer: '',
-        usul: ''
+        usul: '',
+        form: ''
       }
     };
     const tbody = document.querySelector('#tbl tbody');
@@ -320,12 +342,16 @@
     const makamFilter = document.getElementById('makamFilter');
     const composerFilter = document.getElementById('composerFilter');
     const usulFilter = document.getElementById('usulFilter');
+    const formFilter = document.getElementById('formFilter');
     const randomPieceBtn = document.getElementById('randomPiece');
 
     const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
     const assetCache = new Map(); // id -> url
 
     // Müzik formu belirleme
+    // NOT: JSON verisinde ayrı bir 'form' alanı bulunmamaktadır.
+    // Form bilgisi, eser isminden otomatik olarak tespit edilmektedir.
+    // Eser isminde geçen anahtar kelimelere göre form sınıflandırması yapılır.
     function detectMusicForm(eserName) {
       const normalized = (eserName || '').toLowerCase();
       if (normalized.includes('peşrev')) return 'Peşrev';
@@ -336,7 +362,7 @@
       if (normalized.includes('ilahi')) return 'İlahi';
       if (normalized.includes('durak')) return 'Durak';
       if (normalized.includes('varsağı')) return 'Varsağı';
-      return 'Diğer';
+      return 'Diğer'; // Belirtilen form türlerinden hiçbiri tespit edilemezse
     }
 
     // Buton metni her zaman aynı
@@ -357,8 +383,10 @@
       const uniqueMakams = new Set(rows.map(r => r.makam).filter(Boolean));
       const uniqueComposers = new Set(rows.map(r => r.bestekar).filter(Boolean));
       const uniqueUsuls = new Set(rows.map(r => r.usul).filter(Boolean));
+      const uniqueForms = new Set(rows.map(r => detectMusicForm(r.eser)).filter(Boolean));
 
       document.getElementById('totalPieces').textContent = rows.length;
+      document.getElementById('totalForms').textContent = uniqueForms.size;
       document.getElementById('totalMakams').textContent = uniqueMakams.size;
       document.getElementById('totalComposers').textContent = uniqueComposers.size;
       document.getElementById('totalUsuls').textContent = uniqueUsuls.size;
@@ -370,6 +398,7 @@
       const makams = [...new Set(rows.map(r => r.makam).filter(Boolean))].sort();
       const composers = [...new Set(rows.map(r => r.bestekar).filter(Boolean))].sort();
       const usuls = [...new Set(rows.map(r => r.usul).filter(Boolean))].sort();
+      const forms = [...new Set(rows.map(r => detectMusicForm(r.eser)).filter(Boolean))].sort();
 
       makamFilter.innerHTML = '<option value="">Tümü</option>' + 
         makams.map(m => `<option value="${m}">${m}</option>`).join('');
@@ -379,6 +408,9 @@
       
       usulFilter.innerHTML = '<option value="">Tümü</option>' + 
         usuls.map(u => `<option value="${u}">${u}</option>`).join('');
+      
+      formFilter.innerHTML = '<option value="">Tümü</option>' + 
+        forms.map(f => `<option value="${f}">${f}</option>`).join('');
     }
 
     // Sıralama
@@ -426,6 +458,11 @@
         
         // Usûl filtresi
         if (state.activeFilters.usul && r.usul !== state.activeFilters.usul) {
+          return false;
+        }
+        
+        // Form filtresi (eser isminden tespit edilen form)
+        if (state.activeFilters.form && detectMusicForm(r.eser) !== state.activeFilters.form) {
           return false;
         }
         
@@ -531,6 +568,11 @@
     
     usulFilter.addEventListener('change', (e) => {
       state.activeFilters.usul = e.target.value;
+      applyFilters();
+    });
+    
+    formFilter.addEventListener('change', (e) => {
+      state.activeFilters.form = e.target.value;
       applyFilters();
     });
     
