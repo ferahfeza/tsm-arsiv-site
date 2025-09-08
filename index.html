@@ -239,14 +239,14 @@
       <div class="row">
         <div class="col-md-6">
           <h6 class="fw-bold">Türk Klasik Müziği Nota Arşivi</h6>
-          <p class="small">
+          <p class="text-body">
             Bu arşiv, Türk Klasik Müziği eserlerinin notalarını araştırmacılar ve müzik severlerin 
             erişimine sunmak amacıyla hazırlanmıştır.
           </p>
         </div>
         <div class="col-md-6">
           <h6 class="fw-bold">Önemli Terimler</h6>
-          <div class="small">
+          <div class="text-body">
             <p class="mb-1"><strong>Makam:</strong> Türk müziğinde ses dizisi sistemi</p>
             <p class="mb-1"><strong>Usûl:</strong> Türk müziğinde ritim kalıbı</p>
             <p class="mb-1"><strong>Peşrev:</strong> Sözlü eserlere giriş niteliğinde instrumental form</p>
@@ -257,12 +257,12 @@
       <hr class="my-3">
       <div class="row align-items-center">
         <div class="col-md-6">
-          <p class="small mb-0">
+          <p class="mb-0 text-body">
             © 2024 TSM Nota Arşivi - Hazırlayan: Ali İhsan Çanakoğlu
           </p>
         </div>
         <div class="col-md-6 text-md-end">
-          <p class="small mb-0">
+          <p class="mb-0 text-body">
             Toplam <span id="footerStats">0</span> eser arşivlenmiştir.
           </p>
         </div>
@@ -547,7 +547,7 @@
         filteredRows = sortRows(filteredRows, state.sortColumn, state.sortDirection);
       }
 
-      // Filtrelenmiş küme state'e yaz
+      // Filtrelenmiş küme state’e yaz
       state.filtered = filteredRows;
 
       // Sayfalama
@@ -671,6 +671,7 @@
         document.querySelectorAll('.sortable').forEach(header => {
           header.classList.remove('sort-asc', 'sort-desc');
         });
+        
         th.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
         applyFilters();
       });
