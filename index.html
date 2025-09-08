@@ -78,8 +78,8 @@
     <header class="mb-4">
       <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
         <div class="text-center text-md-start">
-          <h3 class="display-6 fw-bold mb-4 text-center">Klâsik Türk Müziği Nota Arşivi</h1>
-          <!--<h2 class="h5 text-secondary mb-0">Hazırlayan: Ali İhsan Çanakoğlu</h2>-->
+          <h3 class="display-6 fw-bold mb-2 text-center">Klâsik Türk Müziği Nota Arşivi</h1>
+          <h2 class="h5 text-secondary mb-0">Hazırlayan: Ali İhsan Çanakoğlu</h2>
         </div>
 
         <!-- Tema seçimli (Açık / Koyu / Sistem) -->
@@ -97,13 +97,13 @@
         </div>
       </div>
 
-      <!--<center><p class="text-secondary mt-3 mb-3 text-center text-md-start">
+      <p class="text-secondary mt-3 mb-3 text-center text-md-start">
         Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz.
-      </p></center>-->
+      </p>
 
-      <div class="row justify-content-center ">
-        <div class="col-12 col-md-8 col-lg-6 mb-2">
-          <input id="q" type="search" class="form-control form-control-lg" placeholder="Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz." aria-label="Tabloda ara" />
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+          <input id="q" type="search" class="form-control form-control-lg" placeholder="Ara: eser, makam, usul, bestekâr, söz..." aria-label="Tabloda ara" />
         </div>
       </div>
     </header>
@@ -198,11 +198,12 @@
             <th scope="col" class="sortable" data-sort="eser">
               Eser İsmi <i class="sort-icon">⇅</i>
             </th>
-            <th scope="col" class="sortable" data-sort="form">
-              Form <i class="sort-icon">⇅</i>
-            </th>
+            <!-- Makam sütunu Form'dan önce -->
             <th scope="col" class="sortable" data-sort="makam">
               Makam <i class="sort-icon">⇅</i>
+            </th>
+            <th scope="col" class="sortable" data-sort="form">
+              Form <i class="sort-icon">⇅</i>
             </th>
             <th scope="col" class="sortable" data-sort="usul">
               Usûl <i class="sort-icon">⇅</i>
@@ -233,24 +234,24 @@
     -->
   </main>
 
-  <!-- Footer -->
+  <!-- Footer: ana sayfa zemini ile aynı ve beyaz yazı -->
   <footer class="bg-body-tertiary border-top mt-5 text-white">
     <div class="container py-4">
       <div class="row">
         <div class="col-md-6">
-          <h6 class="fw-bold">Klasik Türk  Müziği Nota Arşivi</h6>
+          <h6 class="fw-bold">Türk Klasik Müziği Nota Arşivi</h6>
           <p>
-            Bu arşiv, Klasik Türk  Müziği eserlerinin notalarını araştırmacılar ve müzik severlerin 
+            Bu arşiv, Türk Klasik Müziği eserlerinin notalarını araştırmacılar ve müzik severlerin 
             erişimine sunmak amacıyla hazırlanmıştır.
           </p>
         </div>
         <div class="col-md-6">
           <h6 class="fw-bold">Önemli Terimler</h6>
           <div>
-            <p class="mb-1"><strong>Makam:</strong>Klasik Türk müziğinde ses dizisi sistemi</p>
-            <p class="mb-1"><strong>Usûl:</strong>Klasik Türk müziğinde ritim kalıbı</p>
-            <p class="mb-1"><strong>Peşrev:</strong> Sözlü eserlere giriş niteliğinde saz eseri</p>
-            <p class="mb-0"><strong>Beste:</strong> Klasik Türk müziğinin en büyük formu</p>
+            <p class="mb-1"><strong>Makam:</strong> Türk müziğinde ses dizisi sistemi</p>
+            <p class="mb-1"><strong>Usûl:</strong> Türk müziğinde ritim kalıbı</p>
+            <p class="mb-1"><strong>Peşrev:</strong> Sözlü eserlere giriş niteliğinde instrumental form</p>
+            <p class="mb-0"><strong>Beste:</strong> Klasik Türk müziğinin en önemli büyük formu</p>
           </div>
         </div>
       </div>
@@ -258,7 +259,7 @@
       <div class="row align-items-center">
         <div class="col-md-6">
           <p class="mb-0">
-            © 2025 KTM Nota Arşivi - Hazırlayan: Ali İhsan Çanakoğlu
+            © 2024 TSM Nota Arşivi - Hazırlayan: Ali İhsan Çanakoğlu
           </p>
         </div>
         <div class="col-md-6 text-md-end">
@@ -322,7 +323,8 @@
     const state = { 
       rows: [], 
       filtered: [], 
-      sortColumn: null, 
+      // Varsayılan: Makam'a göre alfabetik (A->Z)
+      sortColumn: 'makam', 
       sortDirection: 'asc',
       activeFilters: {
         makam: '',
@@ -515,6 +517,17 @@
       pagination.innerHTML = html;
     }
 
+    function applyHeaderSortClasses() {
+      // Başlıklardaki aktif sıralama göstergesini güncel tut
+      document.querySelectorAll('.sortable').forEach(header => {
+        header.classList.remove('sort-asc', 'sort-desc');
+      });
+      if (state.sortColumn) {
+        const th = document.querySelector(`.sortable[data-sort="${state.sortColumn}"]`);
+        th?.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+      }
+    }
+
     // Sayfalama tıklamaları
     if (pagination) {
       pagination.addEventListener('click', (e) => {
@@ -556,7 +569,7 @@
       const start = (state.currentPage - 1) * state.pageSize;
       const pageRows = filteredRows.slice(start, start + state.pageSize);
 
-      // Satırları çiz
+      // Satırları çiz (Makam sütunu Form'dan önce)
       tbody.innerHTML = pageRows.map(r => {
         const nid = `asset-${String(r.id ?? '').replace(/[^a-zA-Z0-9_-]/g,'')}`;
         const cached = r.id != null ? assetCache.get(r.id) : null;
@@ -566,13 +579,16 @@
         return `
           <tr>
             <td>${r.eser || ''}</td>
-            <td><span class="badge bg-secondary">${form}</span></td>
             <td>${r.makam || ''}</td>
+            <td><span class="badge bg-secondary">${form}</span></td>
             <td>${r.usul || ''}</td>
             <td>${r.bestekar || ''}</td>
             <td id="${nid}">${linkHtml}</td>
           </tr>`;
       }).join('');
+
+      // Başlıklardaki aktif sıralama oklarını güncelle
+      applyHeaderSortClasses();
 
       // Sayfalama kontrollerini çiz
       renderPagination(totalPages);
@@ -668,10 +684,7 @@
         }
 
         state.currentPage = 1; // sıralamada başa dön
-        document.querySelectorAll('.sortable').forEach(header => {
-          header.classList.remove('sort-asc', 'sort-desc');
-        });
-        th.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+        applyHeaderSortClasses();
         applyFilters();
       });
     });
