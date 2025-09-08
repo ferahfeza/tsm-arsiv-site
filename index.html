@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="tr" data-bs-theme="light">
 <head>
@@ -108,19 +107,6 @@
         </div>
       </div>
     </header>
-    
- <!-- Koyu/dolgun jumbotron -->
-    <section class="my-4">
-      <div class="p-5 mb-4 text-bg-dark rounded-3">
-        <div class="container-fluid py-5">
-          <h1 class="display-6 mb-2">Hoş Geldiniz</h3>
-          <p class="fs-5 mb-4">Klâsik Türk Müziği eserlerini makam, usûl, bestekâr veya söz yazarına göre arayın.</p>
-          <a class="btn btn-light btn-lg" href="#q">Aramaya Git</a>
-          <button id="randomPiece" class="btn btn-outline-light btn-lg ms-2">Rastgele Eser</button>
-        </div>
-      </div>
-    </section> 
-   
 
     <!-- İstatistikler -->
     <section id="statistics" class="mb-4">
@@ -234,7 +220,7 @@
     <!--
     <p id="help" class="text-body-secondary small mt-3">
       <span class="badge text-bg-secondary">İpucu</span>
-      Otomatik tespit: notalar/&lt;id&gt;.[pdf|png|jpg|jpeg|gif|tif|tiff|webp].
+      Otomatik tespit: notalar/<id>.[pdf|png|jpg|jpeg|gif|tif|tiff|webp].
       Elle belirtmek için rows.json’a "dosya" (örn: "3.tiff") veya tam "url" ekleyin.
     </p>
     -->
@@ -562,7 +548,9 @@
       applyFilters();
     });
     
-    randomPieceBtn.addEventListener('click', showRandomPiece);
+    if (randomPieceBtn) {
+      randomPieceBtn.addEventListener('click', showRandomPiece);
+    }
 
     // Tablo başlığı sıralama
     document.querySelectorAll('.sortable').forEach(th => {
