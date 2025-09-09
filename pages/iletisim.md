@@ -1,3 +1,5 @@
+Bu sitedeki eser notaları, Kütahya Türk Müziği Topluluğu (KTMT) üyelerinin katkıları ile geliştirilmektedir. Eserler ağırlıklı olarak topluluğumuzun geçtiği eserlerden oluşmaktadır.
+
 Sorularınız ve katkılarınız için:
 
 - **E-posta:** aihsan.canakoglu@dpu.edu.tr
