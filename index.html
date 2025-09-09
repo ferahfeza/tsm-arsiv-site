@@ -35,7 +35,7 @@
     .sortable.sort-asc .sort-icon::before { content: "↑"; }
     .sortable.sort-desc .sort-icon::before { content: "↓"; }
 
-    /* İstatistik kartları */
+    /* İstatistik kartları (istatistik bloğu kaldırıldı, bu stil kalsa da sorun olmaz) */
     #statistics .card { transition: transform 0.2s; }
     #statistics .card:hover { transform: translateY(-2px); }
 
@@ -80,51 +80,7 @@
       </div>
     </header>
 
-    <!-- İstatistikler -->
-    <section id="statistics" class="mb-4">
-      <div class="row g-3">
-        <div class="col-6 col-md-2 col-lg-2">
-          <div class="card text-center">
-            <div class="card-body">
-              <h5 class="card-title text-primary mb-1"><span id="totalPieces">0</span></h5>
-              <p class="card-text small text-muted mb-0">Toplam Eser</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-2 col-lg-2">
-          <div class="card text-center">
-            <div class="card-body">
-              <h5 class="card-title text-danger mb-1"><span id="totalForms">0</span></h5>
-              <p class="card-text small text-muted mb-0">Form</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3 col-lg-3">
-          <div class="card text-center">
-            <div class="card-body">
-              <h5 class="card-title text-success mb-1"><span id="totalMakams">0</span></h5>
-              <p class="card-text small text-muted mb-0">Makam</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3 col-lg-3">
-          <div class="card text-center">
-            <div class="card-body">
-              <h5 class="card-title text-warning mb-1"><span id="totalComposers">0</span></h5>
-              <p class="card-text small text-muted mb-0">Bestekâr</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-2 col-lg-2">
-          <div class="card text-center">
-            <div class="card-body">
-              <h5 class="card-title text-info mb-1"><span id="totalUsuls">0</span></h5>
-              <p class="card-text small text-muted mb-0">Usûl</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- İstatistikler BLOĞU KALDIRILDI -->
 
     <!-- Gelişmiş Filtreleme -->
     <section class="mb-4">
@@ -210,19 +166,20 @@
           </p>
         </div>
         <div class="col-md-6">
-          <h6 class="fw-bold">Önemli Terimler</h6>
-          <div>
-            <p class="mb-1"><strong>Makam:</strong> Türk müziğinde ses dizisi sistemi</p>
-            <p class="mb-1"><strong>Usûl:</strong> Türk müziğinde ritim kalıbı</p>
-            <p class="mb-1"><strong>Peşrev:</strong> Sözlü eserlere giriş niteliğinde instrumental form</p>
-            <p class="mb-0"><strong>Beste:</strong> Klasik Türk müziğinin en önemli büyük formu</p>
+          <h6 class="fw-bold">Arşiv İstatistikleri</h6>
+          <div class="row">
+            <div class="col-6 col-sm-4 mb-1">Toplam Eser: <strong id="totalPieces">0</strong></div>
+            <div class="col-6 col-sm-4 mb-1">Form: <strong id="totalForms">0</strong></div>
+            <div class="col-6 col-sm-4 mb-1">Makam: <strong id="totalMakams">0</strong></div>
+            <div class="col-6 col-sm-4 mb-1">Bestekâr: <strong id="totalComposers">0</strong></div>
+            <div class="col-6 col-sm-4 mb-1">Usûl: <strong id="totalUsuls">0</strong></div>
           </div>
         </div>
       </div>
       <hr class="my-3">
       <div class="row align-items-center">
         <div class="col-md-6">
-          <p class="mb-0">© 2025 TSM Nota Arşivi - Hazırlayan: <a href="mailto:aihsan.canakoglu@dpu.edu.tr">Ali İhsan Çanakoğlu</a></p>
+          <p class="mb-0">© 2025 TSM Nota Arşivi - Hazırlayan: <a class="text-white text-decoration-underline" href="mailto:aihsan.canakoglu@dpu.edu.tr">Ali İhsan Çanakoğlu</a></p>
         </div>
         <div class="col-md-6 text-md-end">
           <p class="mb-0">Toplam <span id="footerStats">0</span> eser arşivlenmiştir.</p>
@@ -324,12 +281,15 @@
       var uniqueComposers = uniq(rows.map(function(r){ return r.bestekar; }));
       var uniqueUsuls = uniq(rows.map(function(r){ return r.usul; }));
       var uniqueForms = uniq(rows.map(function(r){ return r.form; }));
-      document.getElementById('totalPieces').textContent = rows.length;
-      document.getElementById('totalForms').textContent = uniqueForms.length;
-      document.getElementById('totalMakams').textContent = uniqueMakams.length;
-      document.getElementById('totalComposers').textContent = uniqueComposers.length;
-      document.getElementById('totalUsuls').textContent = uniqueUsuls.length;
-      document.getElementById('footerStats').textContent = rows.length;
+      var total = rows.length;
+
+      var el;
+      el = document.getElementById('totalPieces'); if (el) el.textContent = total;
+      el = document.getElementById('totalForms'); if (el) el.textContent = uniqueForms.length;
+      el = document.getElementById('totalMakams'); if (el) el.textContent = uniqueMakams.length;
+      el = document.getElementById('totalComposers'); if (el) el.textContent = uniqueComposers.length;
+      el = document.getElementById('totalUsuls'); if (el) el.textContent = uniqueUsuls.length;
+      el = document.getElementById('footerStats'); if (el) el.textContent = total;
     }
 
     // Filtreleri doldur
@@ -425,7 +385,7 @@
           html += ''
             + '<li class="page-item' + active + '">'
             + '  <a class="page-link" href="#" data-page="' + p + '">' + p + '</a>'
-            + '</li>';
+            + ' </li>';
         }
       });
       html += ''
