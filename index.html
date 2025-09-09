@@ -20,150 +20,165 @@
   </script>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <!-- Markdown render -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
+
   <style>
-    /* Sistem bileşenleri için renk düzeni ipucu */
     :root, [data-bs-theme="light"] { color-scheme: light; }
     [data-bs-theme="dark"] { color-scheme: dark; }
 
-    /* Masaüstünde başlığı ve tema seçiciyi aynı hatta hizala */
     header .toolbar { gap: .5rem; }
 
-    /* Sıralanabilir tablo başlıkları */
     .sortable { cursor: pointer; user-select: none; position: relative; }
     .sortable:hover { background-color: var(--bs-secondary-bg); }
     .sort-icon { font-size: 0.8em; color: #6c757d; margin-left: 0.25rem; }
     .sortable.sort-asc .sort-icon::before { content: "↑"; }
     .sortable.sort-desc .sort-icon::before { content: "↓"; }
 
-    /* İstatistik kartları (istatistik bloğu kaldırıldı, bu stil kalsa da sorun olmaz) */
-    #statistics .card { transition: transform 0.2s; }
-    #statistics .card:hover { transform: translateY(-2px); }
-
-    /* Responsive tablo */
     @media (max-width: 768px) {
       .table th, .table td { font-size: 0.875rem; padding: 0.5rem 0.25rem; }
     }
+
+    /* Blog içeriği stilleri */
+    .blog-title { margin-bottom: .5rem; }
+    .blog-meta { color: #adb5bd; margin-bottom: 1rem; }
+    .md-content img { max-width: 100%; height: auto; }
+    .md-content pre { background: rgba(0,0,0,.05); padding: .75rem; border-radius: .25rem; overflow:auto; }
   </style>
 </head>
 <body class="bg-body-tertiary">
-  <main class="container py-4">
-    <header class="mb-2">
-      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-        <div class="text-center text-md-start">
-          <h3 class="display-6 fw-bold mb-4 text-center">Klâsik Türk Müziği Nota Arşivi</h3>
-          <!--<h2 class="h5 text-secondary mb-0">Hazırlayan: Ali İhsan Çanakoğlu</h2>-->
-        </div>
 
-        <!-- Tema seçimli (Açık / Koyu / Sistem) -->
-        <div class="toolbar d-flex align-items-center justify-content-center">
-          <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              Tema
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
-              <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="light">🌞 Açık</button></li>
-              <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="dark">🌙 Koyu</button></li>
-              <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="auto">🖥️ Sistem</button></li>
-            </ul>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#/" data-nav="home">TSM Nota Arşivi</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Menüyü Aç/Kapat">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+          <li class="nav-item"><a class="nav-link" href="#/" data-nav="home">Ana Sayfa</a></li>
+          <li class="nav-item"><a class="nav-link" href="#/blog" data-nav="blog">Blog</a></li>
+          <li class="nav-item"><a class="nav-link" href="#/hakkinda" data-nav="hakkinda">Hakkında</a></li>
+          <li class="nav-item"><a class="nav-link" href="#/iletisim" data-nav="iletisim">İletişim</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+
+    <!-- ANA SAYFA (liste) -->
+    <div id="view-home">
+      <header class="mb-2">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div class="text-center text-md-start">
+            <h3 class="display-6 fw-bold mb-4 text-center">Klâsik Türk Müziği Nota Arşivi</h3>
+          </div>
+
+          <div class="toolbar d-flex align-items-center justify-content-center">
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Tema
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+                <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="light">🌞 Açık</button></li>
+                <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="dark">🌙 Koyu</button></li>
+                <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="auto">🖥️ Sistem</button></li>
+              </ul>
+            </div>
           </div>
         </div>
+
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-8 col-lg-6 mb-4">
+            <input id="q" type="search" class="form-control form-control-lg" placeholder="Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz." aria-label="Tabloda ara" />
+          </div>
+        </div>
+      </header>
+
+      <section class="mb-4">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label for="makamFilter" class="form-label">Makam Filtresi</label>
+            <select id="makamFilter" class="form-select">
+              <option value="">Tümü</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="composerFilter" class="form-label">Bestekâr Filtresi</label>
+            <select id="composerFilter" class="form-select">
+              <option value="">Tümü</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="usulFilter" class="form-label">Usûl Filtresi</label>
+            <select id="usulFilter" class="form-select">
+              <option value="">Tümü</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="formFilter" class="form-label">Form Filtresi</label>
+            <select id="formFilter" class="form-select">
+              <option value="">Tümü</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="table-responsive">
+        <table id="tbl" class="table table-hover align-middle" aria-describedby="help">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="sortable" data-sort="eser">Eser İsmi <i class="sort-icon">⇅</i></th>
+              <th scope="col" class="sortable" data-sort="makam">Makam <i class="sort-icon">⇅</i></th>
+              <th scope="col" class="sortable" data-sort="form">Form <i class="sort-icon">⇅</i></th>
+              <th scope="col" class="sortable" data-sort="usul">Usûl <i class="sort-icon">⇅</i></th>
+              <th scope="col" class="sortable" data-sort="bestekar">Bestekâr <i class="sort-icon">⇅</i></th>
+              <th scope="col">Nota</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
 
-      <!--<p class="text-secondary mt-3 mb-3 text-center text-md-start">
-        Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz.
-      </p>-->
-
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6 mb-4">
-          <input id="q" type="search" class="form-control form-control-lg" placeholder="Arama yapabilir ve “Nota” sütunundan dosyayı açabilirsiniz." aria-label="Tabloda ara" />
-        </div>
-      </div>
-    </header>
-
-    <!-- İstatistikler BLOĞU KALDIRILDI -->
-
-    <!-- Gelişmiş Filtreleme -->
-    <section class="mb-4">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label for="makamFilter" class="form-label">Makam Filtresi</label>
-          <select id="makamFilter" class="form-select">
-            <option value="">Tümü</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label for="composerFilter" class="form-label">Bestekâr Filtresi</label>
-          <select id="composerFilter" class="form-select">
-            <option value="">Tümü</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label for="usulFilter" class="form-label">Usûl Filtresi</label>
-          <select id="usulFilter" class="form-select">
-            <option value="">Tümü</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label for="formFilter" class="form-label">Form Filtresi</label>
-          <select id="formFilter" class="form-select">
-            <option value="">Tümü</option>
-          </select>
-        </div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-12">
-          <!--<small class="text-muted">
-            <i class="bi bi-info-circle"></i> Form bilgisi JSON verisinde yer almaktadır.
-          </small>-->
-        </div>
-      </div>
-    </section>
-
-    <div class="table-responsive">
-      <table id="tbl" class="table table-hover align-middle" aria-describedby="help">
-        <thead class="table-light">
-          <tr>
-            <th scope="col" class="sortable" data-sort="eser">
-              Eser İsmi <i class="sort-icon">⇅</i>
-            </th>
-            <!-- Makam sütunu Form'dan önce -->
-            <th scope="col" class="sortable" data-sort="makam">
-              Makam <i class="sort-icon">⇅</i>
-            </th>
-            <th scope="col" class="sortable" data-sort="form">
-              Form <i class="sort-icon">⇅</i>
-            </th>
-            <th scope="col" class="sortable" data-sort="usul">
-              Usûl <i class="sort-icon">⇅</i>
-            </th>
-            <th scope="col" class="sortable" data-sort="bestekar">
-              Bestekâr <i class="sort-icon">⇅</i>
-            </th>
-            <th scope="col">Nota</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <section class="mt-3">
+        <nav aria-label="Sayfalama">
+          <ul id="pagination" class="pagination justify-content-center mb-0"></ul>
+        </nav>
+      </section>
     </div>
 
-    <!-- Sayfalama -->
-    <section class="mt-3">
-      <nav aria-label="Sayfalama">
-        <ul id="pagination" class="pagination justify-content-center mb-0"></ul>
-      </nav>
-    </section>
+    <!-- BLOG -->
+    <div id="view-blog" class="d-none">
+      <div class="row">
+        <div class="col-12 col-lg-4 mb-3">
+          <h4 class="mb-3">Blog</h4>
+          <ul id="blogList" class="list-group"></ul>
+        </div>
+        <div class="col-12 col-lg-8">
+          <article id="blogContent" class="md-content">
+            <h5 class="text-secondary">Bir yazı seçiniz.</h5>
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAYFA (Hakkında / İletişim) -->
+    <div id="view-page" class="d-none">
+      <article id="pageContent" class="md-content"></article>
+    </div>
+
   </main>
 
-  <!-- Footer: ana sayfa zemini ile aynı ve beyaz yazı -->
+  <!-- Footer -->
   <footer class="bg-body-tertiary border-top mt-5 text-white">
     <div class="container py-4">
       <div class="row">
         <div class="col-md-6">
-          <h6 class="fw-bold">Türk Klâsik Müziği Nota Arşivi</h6>
-          <p>
-            Bu arşiv, Türk Klâsik Müziği eserlerinin notalarını araştırmacılar ve Klâsik Türk Müziği âşıklarının 
-            erişimine sunmak amacıyla hazırlanmıştır.
-          </p>
+          <h6 class="fw-bold">Türk Klasik Müziği Nota Arşivi</h6>
+          <p>Bu arşiv, Türk Klasik Müziği eserlerinin notalarını araştırmacılar ve müzik severlerin erişimine sunmak amacıyla hazırlanmıştır.</p>
         </div>
         <div class="col-md-6">
           <h6 class="fw-bold">Arşiv İstatistikleri</h6>
@@ -188,7 +203,6 @@
     </div>
   </footer>
 
-  <!-- Bootstrap JS (Dropdown için gerekli) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
   <!-- Tema yönetimi -->
@@ -229,7 +243,7 @@
     })();
   </script>
 
-  <!-- Uygulama mantığı -->
+  <!-- Uygulama mantığı + Router -->
   <script>
     // Android uyumluluğu: Türkçe küçük harf/karşılaştırma için güvenli yardımcılar
     function safeLowerTR(s) {
@@ -242,10 +256,10 @@
       catch (_) { try { return String(a).localeCompare(String(b)); } catch (e) { return (a > b) - (a < b); } }
     }
 
+    // Global state (liste)
     var state = { 
       rows: [], 
       filtered: [], 
-      // Varsayılan: Makam'a göre alfabetik (A→Z)
       sortColumn: 'makam', 
       sortDirection: 'asc',
       activeFilters: { makam: '', composer: '', usul: '', form: '' },
@@ -253,6 +267,7 @@
       pageSize: 10
     };
 
+    // Element refs
     var tbody = document.querySelector('#tbl tbody');
     var q = document.getElementById('q');
     var makamFilter = document.getElementById('makamFilter');
@@ -261,6 +276,15 @@
     var formFilter = document.getElementById('formFilter');
     var randomPieceBtn = document.getElementById('randomPiece');
     var pagination = document.getElementById('pagination');
+
+    // Views
+    var viewHome = document.getElementById('view-home');
+    var viewBlog = document.getElementById('view-blog');
+    var viewPage = document.getElementById('view-page');
+
+    // Blog state
+    var blogIndexLoaded = false;
+    var blogPosts = []; // [{slug,title,date,file}, ...]
 
     var CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
     var assetCache = new Map(); // id -> url
@@ -425,7 +449,6 @@
           if (!isNaN(num)) state.currentPage = Math.min(Math.max(num, 1), totalPages);
         }
         render(state.rows);
-        // Tabloya kaydır
         var tbl = document.getElementById('tbl');
         if (tbl && tbl.scrollIntoView) tbl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
@@ -433,20 +456,15 @@
 
     function render(rows) {
       try {
-        // Filtreleme uygula
         var filteredRows = filterRows(rows);
-        // Sıralama uygula
         if (state.sortColumn) filteredRows = sortRows(filteredRows, state.sortColumn, state.sortDirection);
-        // Filtrelenmiş küme state'e yaz
         state.filtered = filteredRows;
 
-        // Sayfalama
         var totalPages = Math.max(1, Math.ceil(filteredRows.length / state.pageSize));
         if (state.currentPage > totalPages) state.currentPage = 1;
         var start = (state.currentPage - 1) * state.pageSize;
         var pageRows = filteredRows.slice(start, start + state.pageSize);
 
-        // Satırları çiz (Makam sütunu Form'dan önce)
         tbody.innerHTML = pageRows.map(function(r){
           var safeId = (r && r.id != null) ? String(r.id) : '';
           safeId = safeId.replace(/[^a-zA-Z0-9_-]/g,'');
@@ -465,12 +483,9 @@
             + '</tr>';
         }).join('');
 
-        // Başlıklardaki aktif sıralama oklarını güncelle
         applyHeaderSortClasses();
-        // Sayfalama kontrollerini çiz
         renderPagination(totalPages);
 
-        // Bağlantısı olmayan satırlar için arka planda dosya tespiti
         pageRows.forEach(function(r){
           if (!r || r.id == null) return;
           if (assetCache.has(r.id)) return;
@@ -508,7 +523,7 @@
     }
 
     function applyFilters() {
-      state.currentPage = 1; // her filtrelemede başa dön
+      state.currentPage = 1;
       render(state.rows);
     }
 
@@ -524,14 +539,13 @@
       });
     }
 
-    // Event listeners
-    q.addEventListener('input', applyFilters);
-    makamFilter.addEventListener('change', function (e) { state.activeFilters.makam = e.target.value; applyFilters(); });
-    composerFilter.addEventListener('change', function (e) { state.activeFilters.composer = e.target.value; applyFilters(); });
-    usulFilter.addEventListener('change', function (e) { state.activeFilters.usul = e.target.value; applyFilters(); });
-    formFilter.addEventListener('change', function (e) { state.activeFilters.form = e.target.value; applyFilters(); });
+    // Event listeners (liste)
+    if (q) q.addEventListener('input', applyFilters);
+    if (makamFilter) makamFilter.addEventListener('change', function (e) { state.activeFilters.makam = e.target.value; applyFilters(); });
+    if (composerFilter) composerFilter.addEventListener('change', function (e) { state.activeFilters.composer = e.target.value; applyFilters(); });
+    if (usulFilter) usulFilter.addEventListener('change', function (e) { state.activeFilters.usul = e.target.value; applyFilters(); });
+    if (formFilter) formFilter.addEventListener('change', function (e) { state.activeFilters.form = e.target.value; applyFilters(); });
 
-    // Tablo başlığı sıralama
     Array.prototype.forEach.call(document.querySelectorAll('.sortable'), function(th){
       th.addEventListener('click', function(){
         var column = th.getAttribute('data-sort');
@@ -541,13 +555,158 @@
           state.sortColumn = column;
           state.sortDirection = 'asc';
         }
-        state.currentPage = 1; // sıralamada başa dön
+        state.currentPage = 1;
         applyHeaderSortClasses();
         applyFilters();
       });
     });
 
-    // Veri yükleme
+    // Blog: index yükleme ve liste
+    function loadBlogIndex() {
+      if (blogIndexLoaded) return Promise.resolve(blogPosts);
+      return fetch('blog.json', { cache: 'no-store' })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(list){
+          if (!Array.isArray(list)) list = [];
+          // Tarihe göre yeni -> eski
+          list.sort(function(a,b){ return cmpTR(b.date || '', a.date || ''); });
+          blogPosts = list;
+          blogIndexLoaded = true;
+          return blogPosts;
+        })
+        .catch(function(){ blogPosts = []; blogIndexLoaded = true; return blogPosts; });
+    }
+
+    function renderBlogList() {
+      var ul = document.getElementById('blogList');
+      if (!ul) return;
+      if (!blogPosts.length) {
+        ul.innerHTML = '<li class="list-group-item text-secondary">Henüz blog yazısı yok.</li>';
+        return;
+      }
+      ul.innerHTML = blogPosts.map(function(p){
+        var href = '#/blog/' + encodeURIComponent(p.slug);
+        var date = p.date ? ' — <small class="text-secondary">' + p.date + '</small>' : '';
+        return '<li class="list-group-item d-flex justify-content-between align-items-start">'
+             + '  <div class="me-auto"><a href="'+href+'" class="fw-semibold">' + (p.title || p.slug) + '</a>' + date + '</div>'
+             + '</li>';
+      }).join('');
+    }
+
+    function renderMarkdownTo(el, mdText, title, meta) {
+      if (!el) return;
+      try {
+        if (typeof marked !== 'undefined') {
+          var html = marked.parse(mdText || '');
+          var head = '';
+          if (title) head += '<h3 class="blog-title">' + title + '</h3>';
+          if (meta)  head += '<div class="blog-meta">' + meta + '</div>';
+          el.innerHTML = head + html;
+        } else {
+          el.textContent = mdText || '';
+        }
+      } catch (e) {
+        el.textContent = mdText || '';
+      }
+    }
+
+    function renderBlogPost(slug) {
+      var contentEl = document.getElementById('blogContent');
+      if (!contentEl) return;
+      loadBlogIndex().then(function(){
+        var i, found = null;
+        for (i = 0; i < blogPosts.length; i++) if (blogPosts[i].slug === slug) { found = blogPosts[i]; break; }
+        if (!found) {
+          contentEl.innerHTML = '<div class="alert alert-warning">Yazı bulunamadı.</div>';
+          return;
+        }
+        contentEl.innerHTML = '<div class="text-secondary">Yükleniyor…</div>';
+        fetch(found.file, { cache: 'no-store' })
+          .then(function(r){ return r.ok ? r.text() : '# Hata\nİçerik yüklenemedi.'; })
+          .then(function(md){
+            renderMarkdownTo(contentEl, md, found.title || found.slug, found.date || '');
+          })
+          .catch(function(){
+            contentEl.innerHTML = '<div class="alert alert-danger">İçerik yüklenemedi.</div>';
+          });
+      });
+    }
+
+    function renderPage(name) {
+      var map = { 'hakkinda': 'pages/hakkinda.md', 'iletisim': 'pages/iletisim.md' };
+      var file = map[name];
+      var el = document.getElementById('pageContent');
+      if (!file || !el) return;
+      el.innerHTML = '<div class="text-secondary">Yükleniyor…</div>';
+      fetch(file, { cache: 'no-store' })
+        .then(function(r){ return r.ok ? r.text() : '# Hata\nSayfa bulunamadı.'; })
+        .then(function(md){
+          var title = name === 'hakkinda' ? 'Hakkında' : 'İletişim';
+          renderMarkdownTo(el, md, '<span class="badge text-bg-secondary me-2">'+title+'</span>', '');
+        })
+        .catch(function(){
+          el.innerHTML = '<div class="alert alert-danger">Sayfa yüklenemedi.</div>';
+        });
+    }
+
+    // Router
+    function setActiveMenu(key) {
+      var links = document.querySelectorAll('a.nav-link, .navbar-brand');
+      for (var i = 0; i < links.length; i++) {
+        var k = links[i].getAttribute('data-nav');
+        if (!k) { links[i].classList.remove('active'); continue; }
+        links[i].classList.toggle('active', k === key);
+      }
+      // Mobil menüyü kapat
+      var nav = document.getElementById('navbarMain');
+      if (nav && typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+        var inst = bootstrap.Collapse.getOrCreateInstance(nav, { toggle: false });
+        inst.hide();
+      }
+    }
+
+    function showView(which) {
+      if (viewHome) viewHome.classList.add('d-none');
+      if (viewBlog) viewBlog.classList.add('d-none');
+      if (viewPage) viewPage.classList.add('d-none');
+      if (which === 'home' && viewHome) viewHome.classList.remove('d-none');
+      if (which === 'blog' && viewBlog) viewBlog.classList.remove('d-none');
+      if (which === 'page' && viewPage) viewPage.classList.remove('d-none');
+      window.scrollTo(0,0);
+    }
+
+    function navigate() {
+      var h = location.hash || '#/';
+      // Normalleştir
+      if (h.indexOf('#') !== 0) h = '#/';
+      // #/blog/slug
+      if (h.indexOf('#/blog/') === 0) {
+        showView('blog'); setActiveMenu('blog');
+        var slug = decodeURIComponent(h.substr('#/blog/'.length));
+        loadBlogIndex().then(function(){ renderBlogList(); renderBlogPost(slug); });
+        return;
+      }
+      // #/blog
+      if (h.indexOf('#/blog') === 0) {
+        showView('blog'); setActiveMenu('blog');
+        loadBlogIndex().then(function(){ renderBlogList(); });
+        var contentEl = document.getElementById('blogContent');
+        if (contentEl) contentEl.innerHTML = '<h5 class="text-secondary">Bir yazı seçiniz.</h5>';
+        return;
+      }
+      // #/hakkinda
+      if (h.indexOf('#/hakkinda') === 0) {
+        showView('page'); setActiveMenu('hakkinda'); renderPage('hakkinda'); return;
+      }
+      // #/iletisim
+      if (h.indexOf('#/iletisim') === 0) {
+        showView('page'); setActiveMenu('iletisim'); renderPage('iletisim'); return;
+      }
+      // default: home
+      showView('home'); setActiveMenu('home');
+    }
+
+    // Veri yükleme (liste)
     fetch('rows.json', { cache: 'no-store' })
       .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('rows.json yüklenemedi')); })
       .then(function(rows){
@@ -563,6 +722,10 @@
         populateFilters(state.rows);
         render(state.rows);
       });
+
+    // Router events
+    window.addEventListener('hashchange', navigate);
+    window.addEventListener('DOMContentLoaded', navigate);
   </script>
 </body>
 </html>
