@@ -7,11 +7,11 @@
 
   <!-- Sayfa yüklenmeden önce temayı ayarla (flicker'ı azaltır) -->
   <script>
-    (() => {
+    (function () {
       try {
-        const stored = localStorage.getItem('theme'); // 'light' | 'dark' | 'auto'
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initial = stored === 'auto' || !stored ? (prefersDark ? 'dark' : 'light') : stored;
+        var stored = localStorage.getItem('theme'); // 'light' | 'dark' | 'auto'
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var initial = stored === 'auto' || !stored ? (prefersDark ? 'dark' : 'light') : stored;
         document.documentElement.setAttribute('data-bs-theme', initial);
       } catch (_) {
         document.documentElement.setAttribute('data-bs-theme', 'light');
@@ -236,35 +236,38 @@
 
   <!-- Tema yönetimi -->
   <script>
-    (() => {
-      const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
-      const getStored = () => { try { return localStorage.getItem('theme'); } catch { return null; } };
-      const setStored = (v) => { try { localStorage.setItem('theme', v); } catch {} };
-      const applyTheme = (theme) => {
+    (function () {
+      var mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+      function getStored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+      function setStored(v) { try { localStorage.setItem('theme', v); } catch (e) {} }
+      function applyTheme(theme) {
         if (theme === 'auto') {
           document.documentElement.setAttribute('data-bs-theme', mql && mql.matches ? 'dark' : 'light');
         } else {
           document.documentElement.setAttribute('data-bs-theme', theme);
         }
-        document.querySelectorAll('[data-bs-theme-value]').forEach(el => {
+        var items = document.querySelectorAll('[data-bs-theme-value]');
+        for (var i = 0; i < items.length; i++) {
+          var el = items[i];
           el.classList.toggle('active', el.getAttribute('data-bs-theme-value') === theme);
-        });
-      };
+        }
+      }
       if (mql && mql.addEventListener) {
-        mql.addEventListener('change', () => {
+        mql.addEventListener('change', function () {
           if (getStored() === 'auto') applyTheme('auto');
         });
       }
-      window.addEventListener('DOMContentLoaded', () => {
-        const current = getStored() || 'auto';
+      window.addEventListener('DOMContentLoaded', function () {
+        var current = getStored() || 'auto';
         applyTheme(current);
-        document.querySelectorAll('[data-bs-theme-value]').forEach(el => {
-          el.addEventListener('click', () => {
-            const theme = el.getAttribute('data-bs-theme-value');
+        var items = document.querySelectorAll('[data-bs-theme-value]');
+        for (var i = 0; i < items.length; i++) {
+          items[i].addEventListener('click', function (ev) {
+            var theme = ev.currentTarget.getAttribute('data-bs-theme-value');
             setStored(theme);
             applyTheme(theme);
           });
-        });
+        }
       });
     })();
   </script>
@@ -273,23 +276,16 @@
   <script>
     // Android uyumluluğu: Türkçe küçük harf/karşılaştırma için güvenli yardımcılar
     function safeLowerTR(s) {
-      const str = (s || '').toString();
-      try {
-        // Bazı eski Android WebView'larda tek string yerine dizi beklenebilir
-        return str.toLocaleLowerCase(['tr']);
-      } catch (_) {
-        try { return str.toLocaleLowerCase(); } catch { return str.toLowerCase(); }
-      }
+      var str = (s == null ? '' : String(s));
+      try { return str.toLocaleLowerCase(['tr']); }
+      catch (_) { try { return str.toLocaleLowerCase(); } catch (e) { return str.toLowerCase(); } }
     }
     function cmpTR(a, b) {
-      try {
-        return a.localeCompare(b, 'tr', { sensitivity: 'base' });
-      } catch (_) {
-        try { return a.localeCompare(b); } catch { return (a > b) - (a < b); }
-      }
+      try { return String(a).localeCompare(String(b), 'tr', { sensitivity: 'base' }); }
+      catch (_) { try { return String(a).localeCompare(String(b)); } catch (e) { return (a > b) - (a < b); } }
     }
 
-    const state = { 
+    var state = { 
       rows: [], 
       filtered: [], 
       // Varsayılan: Makam'a göre alfabetik (A→Z)
@@ -300,192 +296,213 @@
       pageSize: 10
     };
 
-    const tbody = document.querySelector('#tbl tbody');
-    const q = document.getElementById('q');
-    const makamFilter = document.getElementById('makamFilter');
-    const composerFilter = document.getElementById('composerFilter');
-    const usulFilter = document.getElementById('usulFilter');
-    const formFilter = document.getElementById('formFilter');
-    const randomPieceBtn = document.getElementById('randomPiece');
-    const pagination = document.getElementById('pagination');
+    var tbody = document.querySelector('#tbl tbody');
+    var q = document.getElementById('q');
+    var makamFilter = document.getElementById('makamFilter');
+    var composerFilter = document.getElementById('composerFilter');
+    var usulFilter = document.getElementById('usulFilter');
+    var formFilter = document.getElementById('formFilter');
+    var randomPieceBtn = document.getElementById('randomPiece');
+    var pagination = document.getElementById('pagination');
 
-    const CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
-    const assetCache = new Map(); // id -> url
+    var CANDIDATE_EXTS = ['pdf','png','jpg','jpeg','gif','tif','tiff','webp'];
+    var assetCache = new Map(); // id -> url
 
     function labelForUrl(_) { return 'Görüntüle'; }
     function linkHtmlForUrl(url) {
-      return `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">${labelForUrl(url)}</a>`;
+      return '<a class="btn btn-sm btn-outline-primary" href="' + url + '" target="_blank" rel="noopener">' + labelForUrl(url) + '</a>';
     }
 
     // İstatistikleri güncelle
     function updateStatistics(rows) {
-      const uniqueMakams = new Set(rows.map(r => r.makam).filter(Boolean));
-      const uniqueComposers = new Set(rows.map(r => r.bestekar).filter(Boolean));
-      const uniqueUsuls = new Set(rows.map(r => r.usul).filter(Boolean));
-      const uniqueForms = new Set(rows.map(r => r.form).filter(Boolean));
+      function uniq(list) {
+        var set = new Set();
+        for (var i = 0; i < list.length; i++) { if (list[i]) set.add(list[i]); }
+        return Array.from(set);
+      }
+      var uniqueMakams = uniq(rows.map(function(r){ return r.makam; }));
+      var uniqueComposers = uniq(rows.map(function(r){ return r.bestekar; }));
+      var uniqueUsuls = uniq(rows.map(function(r){ return r.usul; }));
+      var uniqueForms = uniq(rows.map(function(r){ return r.form; }));
       document.getElementById('totalPieces').textContent = rows.length;
-      document.getElementById('totalForms').textContent = uniqueForms.size;
-      document.getElementById('totalMakams').textContent = uniqueMakams.size;
-      document.getElementById('totalComposers').textContent = uniqueComposers.size;
-      document.getElementById('totalUsuls').textContent = uniqueUsuls.size;
+      document.getElementById('totalForms').textContent = uniqueForms.length;
+      document.getElementById('totalMakams').textContent = uniqueMakams.length;
+      document.getElementById('totalComposers').textContent = uniqueComposers.length;
+      document.getElementById('totalUsuls').textContent = uniqueUsuls.length;
       document.getElementById('footerStats').textContent = rows.length;
     }
 
     // Filtreleri doldur
     function populateFilters(rows) {
-      const makams = [...new Set(rows.map(r => r.makam).filter(Boolean))].sort(cmpTR);
-      const composers = [...new Set(rows.map(r => r.bestekar).filter(Boolean))].sort(cmpTR);
-      const usuls = [...new Set(rows.map(r => r.usul).filter(Boolean))].sort(cmpTR);
-      const forms = [...new Set(rows.map(r => r.form).filter(Boolean))].sort(cmpTR);
+      function uniqueSorted(getter) {
+        var set = new Set();
+        for (var i = 0; i < rows.length; i++) {
+          var v = getter(rows[i]);
+          if (v) set.add(v);
+        }
+        var arr = Array.from(set);
+        arr.sort(cmpTR);
+        return arr;
+      }
+      var makams = uniqueSorted(function(r){ return r.makam; });
+      var composers = uniqueSorted(function(r){ return r.bestekar; });
+      var usuls = uniqueSorted(function(r){ return r.usul; });
+      var forms = uniqueSorted(function(r){ return r.form; });
 
-      makamFilter.innerHTML = '<option value="">Tümü</option>' + makams.map(m => `<option value="${m}">${m}</option>`).join('');
-      composerFilter.innerHTML = '<option value="">Tümü</option>' + composers.map(c => `<option value="${c}">${c}</option>`).join('');
-      usulFilter.innerHTML = '<option value="">Tümü</option>' + usuls.map(u => `<option value="${u}">${u}</option>`).join('');
-      formFilter.innerHTML = '<option value="">Tümü</option>' + forms.map(f => `<option value="${f}">${f}</option>`).join('');
+      makamFilter.innerHTML = '<option value="">Tümü</option>' + makams.map(function(m){ return '<option value="'+m+'">'+m+'</option>'; }).join('');
+      composerFilter.innerHTML = '<option value="">Tümü</option>' + composers.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
+      usulFilter.innerHTML = '<option value="">Tümü</option>' + usuls.map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('');
+      formFilter.innerHTML = '<option value="">Tümü</option>' + forms.map(function(f){ return '<option value="'+f+'">'+f+'</option>'; }).join('');
     }
 
     // Sıralama
     function sortRows(rows, column, direction) {
-      return [...rows].sort((a, b) => {
-        let valueA = (a[column] ?? '').toString();
-        let valueB = (b[column] ?? '').toString();
-
+      var copy = rows.slice();
+      copy.sort(function(a, b) {
+        var valueA = a[column] == null ? '' : String(a[column]);
+        var valueB = b[column] == null ? '' : String(b[column]);
         if (column === 'form') {
-          valueA = (a.form ?? '').toString();
-          valueB = (b.form ?? '').toString();
+          valueA = a.form == null ? '' : String(a.form);
+          valueB = b.form == null ? '' : String(b.form);
         }
-        const res = cmpTR(valueA, valueB);
+        var res = cmpTR(valueA, valueB);
         return direction === 'asc' ? res : -res;
       });
+      return copy;
     }
 
     // Filtreleme
     function filterRows(rows) {
-      const searchNeedle = safeLowerTR(q.value);
-      return rows.filter(r => {
-        // Arama filtresi
+      var searchNeedle = safeLowerTR(q.value);
+      return rows.filter(function(r){
         if (searchNeedle) {
-          const hay = [r.eser, r.makam, r.usul, r.bestekar, r.soz].map(safeLowerTR).join(' ');
-          if (!hay.includes(searchNeedle)) return false;
+          var hay = [r.eser, r.makam, r.usul, r.bestekar, r.soz].map(safeLowerTR).join(' ');
+          if (hay.indexOf(searchNeedle) === -1) return false;
         }
-        // Makam filtresi
         if (state.activeFilters.makam && r.makam !== state.activeFilters.makam) return false;
-        // Bestekâr filtresi
         if (state.activeFilters.composer && r.bestekar !== state.activeFilters.composer) return false;
-        // Usûl filtresi
         if (state.activeFilters.usul && r.usul !== state.activeFilters.usul) return false;
-        // Form filtresi
         if (state.activeFilters.form && r.form !== state.activeFilters.form) return false;
         return true;
       });
     }
 
-    function getPageNumbers(current, totalPages, delta = 2) {
-      const range = [], pages = [];
-      let last;
-      for (let i = 1; i <= totalPages; i++) {
+    function getPageNumbers(current, totalPages, delta) {
+      if (delta == null) delta = 2;
+      var range = [], pages = [], last;
+      for (var i = 1; i <= totalPages; i++) {
         if (i === 1 || i === totalPages || (i >= current - delta && i <= current + delta)) range.push(i);
       }
-      for (const i of range) {
+      for (var j = 0; j < range.length; j++) {
+        var n = range[j];
         if (last) {
-          if (i - last === 2) pages.push(last + 1);
-          else if (i - last > 2) pages.push('…');
+          if (n - last === 2) pages.push(last + 1);
+          else if (n - last > 2) pages.push('…');
         }
-        pages.push(i); last = i;
+        pages.push(n); last = n;
       }
       return pages;
     }
 
     function renderPagination(totalPages) {
       if (!pagination) return;
-      const current = state.currentPage;
-      const pages = getPageNumbers(current, totalPages);
-      const prevDisabled = current <= 1 ? ' disabled' : '';
-      const nextDisabled = current >= totalPages ? ' disabled' : '';
-      let html = '';
-      html += `
-        <li class="page-item${prevDisabled}">
-          <a class="page-link" href="#" aria-label="Önceki" data-page="prev">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>`;
-      pages.forEach(p => {
+      var current = state.currentPage;
+      var pages = getPageNumbers(current, totalPages);
+      var prevDisabled = current <= 1 ? ' disabled' : '';
+      var nextDisabled = current >= totalPages ? ' disabled' : '';
+      var html = '';
+      html += ''
+        + '<li class="page-item' + prevDisabled + '">'
+        + '  <a class="page-link" href="#" aria-label="Önceki" data-page="prev">'
+        + '    <span aria-hidden="true">&laquo;</span>'
+        + '  </a>'
+        + '</li>';
+      pages.forEach(function(p){
         if (p === '…') {
-          html += `<li class="page-item disabled"><span class="page-link">…</span></li>`;
+          html += '<li class="page-item disabled"><span class="page-link">…</span></li>';
         } else {
-          const active = p === current ? ' active' : '';
-          html += `
-            <li class="page-item${active}">
-              <a class="page-link" href="#" data-page="${p}">${p}</a>
-            </li>`;
+          var active = p === current ? ' active' : '';
+          html += ''
+            + '<li class="page-item' + active + '">'
+            + '  <a class="page-link" href="#" data-page="' + p + '">' + p + '</a>'
+            + '</li>';
         }
       });
-      html += `
-        <li class="page-item${nextDisabled}">
-          <a class="page-link" href="#" aria-label="Sonraki" data-page="next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>`;
+      html += ''
+        + '<li class="page-item' + nextDisabled + '">'
+        + '  <a class="page-link" href="#" aria-label="Sonraki" data-page="next">'
+        + '    <span aria-hidden="true">&raquo;</span>'
+        + '  </a>'
+        + '</li>';
       pagination.innerHTML = html;
     }
 
     function applyHeaderSortClasses() {
-      document.querySelectorAll('.sortable').forEach(header => header.classList.remove('sort-asc', 'sort-desc'));
+      var headers = document.querySelectorAll('.sortable');
+      for (var i = 0; i < headers.length; i++) headers[i].classList.remove('sort-asc', 'sort-desc');
       if (state.sortColumn) {
-        const th = document.querySelector(`.sortable[data-sort="${state.sortColumn}"]`);
-        th?.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+        var th = document.querySelector('.sortable[data-sort="' + state.sortColumn + '"]');
+        if (th) th.classList.add(state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
       }
     }
 
     // Sayfalama tıklamaları
     if (pagination) {
-      pagination.addEventListener('click', (e) => {
-        const a = e.target.closest('a[data-page]');
+      pagination.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[data-page]');
         if (!a) return;
         e.preventDefault();
-        const totalPages = Math.max(1, Math.ceil((state.filtered?.length || 0) / state.pageSize));
-        const p = a.getAttribute('data-page');
-        if (p === 'prev') { if (state.currentPage > 1) state.currentPage--; }
-        else if (p === 'next') { if (state.currentPage < totalPages) state.currentPage++; }
-        else {
-          const num = parseInt(p, 10);
+
+        var filteredLen = state.filtered && state.filtered.length ? state.filtered.length : 0;
+        var totalPages = Math.max(1, Math.ceil(filteredLen / state.pageSize));
+        var p = a.getAttribute('data-page');
+        if (p === 'prev') {
+          if (state.currentPage > 1) state.currentPage--;
+        } else if (p === 'next') {
+          if (state.currentPage < totalPages) state.currentPage++;
+        } else {
+          var num = parseInt(p, 10);
           if (!isNaN(num)) state.currentPage = Math.min(Math.max(num, 1), totalPages);
         }
         render(state.rows);
-        document.getElementById('tbl')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Tabloya kaydır
+        var tbl = document.getElementById('tbl');
+        if (tbl && tbl.scrollIntoView) tbl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
 
     function render(rows) {
       try {
         // Filtreleme uygula
-        let filteredRows = filterRows(rows);
+        var filteredRows = filterRows(rows);
         // Sıralama uygula
         if (state.sortColumn) filteredRows = sortRows(filteredRows, state.sortColumn, state.sortDirection);
         // Filtrelenmiş küme state'e yaz
         state.filtered = filteredRows;
 
         // Sayfalama
-        const totalPages = Math.max(1, Math.ceil(filteredRows.length / state.pageSize));
+        var totalPages = Math.max(1, Math.ceil(filteredRows.length / state.pageSize));
         if (state.currentPage > totalPages) state.currentPage = 1;
-        const start = (state.currentPage - 1) * state.pageSize;
-        const pageRows = filteredRows.slice(start, start + state.pageSize);
+        var start = (state.currentPage - 1) * state.pageSize;
+        var pageRows = filteredRows.slice(start, start + state.pageSize);
 
         // Satırları çiz (Makam sütunu Form'dan önce)
-        tbody.innerHTML = pageRows.map(r => {
-          const nid = `asset-${String(r.id ?? '').replace(/[^a-zA-Z0-9_-]/g,'')}`;
-          const cached = r.id != null ? assetCache.get(r.id) : null;
-          const linkHtml = cached ? linkHtmlForUrl(cached) : '<span class="text-secondary">—</span>';
-          const form = r.form || '';
-          return `
-            <tr>
-              <td>${r.eser || ''}</td>
-              <td>${r.makam || ''}</td>
-              <td><span class="badge bg-secondary">${form}</span></td>
-              <td>${r.usul || ''}</td>
-              <td>${r.bestekar || ''}</td>
-              <td id="${nid}">${linkHtml}</td>
-            </tr>`;
+        tbody.innerHTML = pageRows.map(function(r){
+          var safeId = (r && r.id != null) ? String(r.id) : '';
+          safeId = safeId.replace(/[^a-zA-Z0-9_-]/g,'');
+          var nid = 'asset-' + safeId;
+          var cached = (r && r.id != null) ? assetCache.get(r.id) : null;
+          var linkHtml = cached ? linkHtmlForUrl(cached) : '<span class="text-secondary">—</span>';
+          var form = r && r.form ? r.form : '';
+          return ''
+            + '<tr>'
+            +   '<td>' + (r.eser || '') + '</td>'
+            +   '<td>' + (r.makam || '') + '</td>'
+            +   '<td><span class="badge bg-secondary">' + form + '</span></td>'
+            +   '<td>' + (r.usul || '') + '</td>'
+            +   '<td>' + (r.bestekar || '') + '</td>'
+            +   '<td id="' + nid + '">' + linkHtml + '</td>'
+            + '</tr>';
         }).join('');
 
         // Başlıklardaki aktif sıralama oklarını güncelle
@@ -494,19 +511,18 @@
         renderPagination(totalPages);
 
         // Bağlantısı olmayan satırlar için arka planda dosya tespiti
-        pageRows.forEach(r => {
+        pageRows.forEach(function(r){
           if (!r || r.id == null) return;
           if (assetCache.has(r.id)) return;
-          resolveAsset(r).then(url => {
+          resolveAsset(r).then(function(url){
             if (!url) return;
             assetCache.set(r.id, url);
-            const nid = `asset-${String(r.id).replace(/[^a-zA-Z0-9_-]/g,'')}`;
-            const cell = document.getElementById(nid);
+            var nid = 'asset-' + String(r.id).replace(/[^a-zA-Z0-9_-]/g,'');
+            var cell = document.getElementById(nid);
             if (cell) cell.innerHTML = linkHtmlForUrl(url);
           });
         });
       } catch (err) {
-        // Mobilde beklenmeyen hataları sessizce yutmayalım
         console.error('Render error:', err);
         tbody.innerHTML = '';
       }
@@ -514,18 +530,19 @@
 
     async function resolveAsset(r) {
       if (r.url && typeof r.url === 'string') return r.url;
-      const fileField = r.dosya || r.file;
+      var fileField = r.dosya || r.file;
       if (fileField && typeof fileField === 'string') {
         if (/^https?:\/\//i.test(fileField)) return fileField;
-        return `notalar/${fileField}`;
+        return 'notalar/' + fileField;
       }
-      if (r.ext && typeof r.ext === 'string') return `notalar/${r.id}.${r.ext.replace(/^\./,'')}`;
-      for (const ext of CANDIDATE_EXTS) {
-        const url = `notalar/${r.id}.${ext}`;
+      if (r.ext && typeof r.ext === 'string') return 'notalar/' + r.id + '.' + r.ext.replace(/^\./,'');
+      for (var i = 0; i < CANDIDATE_EXTS.length; i++) {
+        var ext = CANDIDATE_EXTS[i];
+        var url = 'notalar/' + r.id + '.' + ext;
         try {
-          const resp = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+          var resp = await fetch(url, { method: 'HEAD', cache: 'no-store' });
           if (resp.ok) return url;
-        } catch (_) {}
+        } catch (e) {}
       }
       return null;
     }
@@ -536,29 +553,34 @@
     }
 
     if (randomPieceBtn) {
-      randomPieceBtn.addEventListener('click', () => {
-        if (state.rows.length === 0) return;
-        const randomIndex = Math.floor(Math.random() * state.rows.length);
-        const randomPiece = state.rows[randomIndex];
+      randomPieceBtn.addEventListener('click', function(){
+        if (!state.rows.length) return;
+        var randomIndex = Math.floor(Math.random() * state.rows.length);
+        var randomPiece = state.rows[randomIndex];
         q.value = randomPiece.eser;
         applyFilters();
-        q.focus(); q.select();
+        q.focus();
+        q.select();
       });
     }
 
     // Event listeners
     q.addEventListener('input', applyFilters);
-    makamFilter.addEventListener('change', (e) => { state.activeFilters.makam = e.target.value; applyFilters(); });
-    composerFilter.addEventListener('change', (e) => { state.activeFilters.composer = e.target.value; applyFilters(); });
-    usulFilter.addEventListener('change', (e) => { state.activeFilters.usul = e.target.value; applyFilters(); });
-    formFilter.addEventListener('change', (e) => { state.activeFilters.form = e.target.value; applyFilters(); });
+    makamFilter.addEventListener('change', function (e) { state.activeFilters.makam = e.target.value; applyFilters(); });
+    composerFilter.addEventListener('change', function (e) { state.activeFilters.composer = e.target.value; applyFilters(); });
+    usulFilter.addEventListener('change', function (e) { state.activeFilters.usul = e.target.value; applyFilters(); });
+    formFilter.addEventListener('change', function (e) { state.activeFilters.form = e.target.value; applyFilters(); });
 
     // Tablo başlığı sıralama
-    document.querySelectorAll('.sortable').forEach(th => {
-      th.addEventListener('click', () => {
-        const column = th.getAttribute('data-sort');
-        if (state.sortColumn === column) state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
-        else { state.sortColumn = column; state.sortDirection = 'asc'; }
+    Array.prototype.forEach.call(document.querySelectorAll('.sortable'), function(th){
+      th.addEventListener('click', function(){
+        var column = th.getAttribute('data-sort');
+        if (state.sortColumn === column) {
+          state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.sortColumn = column;
+          state.sortDirection = 'asc';
+        }
         state.currentPage = 1; // sıralamada başa dön
         applyHeaderSortClasses();
         applyFilters();
@@ -567,19 +589,19 @@
 
     // Veri yükleme
     fetch('rows.json', { cache: 'no-store' })
-      .then(r => r.ok ? r.json() : Promise.reject(new Error('rows.json yüklenemedi')))
-      .then(rows => {
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('rows.json yüklenemedi')); })
+      .then(function(rows){
         state.rows = Array.isArray(rows) ? rows : [];
         updateStatistics(state.rows);
         populateFilters(state.rows);
         render(state.rows);
       })
-      .catch((err) => { 
+      .catch(function(err){
         console.error('Veri yükleme hatası:', err);
-        state.rows = []; 
+        state.rows = [];
         updateStatistics(state.rows);
         populateFilters(state.rows);
-        render(state.rows); 
+        render(state.rows);
       });
   </script>
 </body>
