@@ -20,6 +20,8 @@ Yapılan temel hesaplamaları ve müzik teorisi parametrelerini özetler.
 
 ## 2. Koma Sistemi
 
-• Bir oktav: 53 koma
-• Her koma: 21/53 oranında frekans artışı
-* Koma frekansı: \(f_0 \times 2^{{\frac{{n}}{{53}}}}\) 
+* Bir oktav: 53 koma
+
+* Her koma: 2^(1/53) oranında frekans artışı
+
+* Koma frekansı: f₀ × 2^(n/53)
