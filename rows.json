@@ -45,23 +45,7 @@
     "dosya": "bir_gun_gelecek.pdf"
   },
   {
-    "filename": "hesaplama_ozet.pdf",
-    "title": "Hesaplama",
-    "composer": "Ben",
-    "date_added": "2025-10-24 00:17:59",
-    "path": "notalar/hesaplama_ozet.pdf"
-  },
-  {
     "id": 6,
-    "eser": "Deneme Eseri",
-    "form": "ŞArkı",
-    "makam": "Hicaz",
-    "usul": "Düyek",
-    "bestekar": "BEnveben",
-    "dosya": "hesaplama_ozet.pdf"
-  },
-  {
-    "id": 7,
     "eser": "Mest oldu gönül",
     "form": "Şarkı",
     "makam": "Karcığar",
