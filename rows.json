@@ -45,23 +45,7 @@
     "dosya": "bir_gun_gelecek.pdf"
   },
   {
-    "filename": "hesaplama_ozet.pdf",
-    "title": "Hesaplama",
-    "composer": "Ben",
-    "date_added": "2025-10-24 00:17:59",
-    "path": "notalar/hesaplama_ozet.pdf"
-  },
-  {
     "id": 6,
-    "eser": "Deneme Eseri",
-    "form": "ŞArkı",
-    "makam": "Hicaz",
-    "usul": "Düyek",
-    "bestekar": "BEnveben",
-    "dosya": "hesaplama_ozet.pdf"
-  },
-  {
-    "id": 7,
     "eser": "Unutmadım seni ben",
     "form": "Şarkı",
     "makam": "Karcığar",
@@ -70,12 +54,21 @@
     "dosya": "unutmadim_seni_ben_ney.pdf"
   },
   {
-    "id": 8,
+    "id": 7,
     "eser": "Gül açar bülbül öter",
     "form": "Şarkı",
     "makam": "Karcığar",
     "usul": "Curcuna",
     "bestekar": "Cevdet Çağla",
     "dosya": "gul_acar_bulbul_oter_yaz_gecer.pdf"
+  },
+   {
+    "id": 8,
+    "eser": "Mest oldu gönül",
+    "form": "Şarkı",
+    "makam": "Karcığar",
+    "usul": "Curcuna",
+    "bestekar": "Şerif İçli",
+    "dosya": "mest_oldu_gonul_gozlerini_gordugum_aksam.pdf"
   }
 ]
