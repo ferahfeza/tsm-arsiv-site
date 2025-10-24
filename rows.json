@@ -44,17 +44,8 @@
     "bestekar": "Sadi Hoşses",
     "dosya": "bir_gun_gelecek.pdf"
   },
- {
-    "id": 6,
-    "eser": "Deneme Eseri",
-    "form": "ŞArkı",
-    "makam": "Hicaz",
-    "usul": "Düyek",
-    "bestekar": "BEnveben",
-    "dosya": "hesaplama_ozet.pdf"
-  },
   {
-    "id": 7,
+    "id": 6,
     "eser": "Unutmadım seni ben",
     "form": "Şarkı",
     "makam": "Karcığar",
@@ -63,7 +54,7 @@
     "dosya": "unutmadim_seni_ben_ney.pdf"
   },
   {
-    "id": 8,
+    "id": 7,
     "eser": "Gül açar bülbül öter",
     "form": "Şarkı",
     "makam": "Karcığar",
